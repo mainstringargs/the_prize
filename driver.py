@@ -66,10 +66,15 @@ last_created_file = find_last_created_on_day_of_week('*.json', 'pp_data', pp_dat
 
 print("Found pp_file:", last_created_file, flush=True)
 
+fantasy_sport = sport_value
+
+if sport_value == "college-football":
+    fantasy_sport = 'cfb'
+
 # Define script paths
 script_paths = [
     ("espn_stats.py", ["--year", year_value, "--week", week_value, "--sport", sport_value]),
-    ("get_fantasy_data.py", ["--year", year_value, "--week", week_value]),
+    ("get_"+fantasy_sport+"_fantasy_data.py", ["--year", year_value, "--week", week_value]),
     ("props.py", ["--year", year_value, "--week", week_value, "--pp_file", last_created_file]),
     ("prop_results.py", ["--year", year_value, "--week", week_value, "--game_day", game_day_of_week_value, "--pp_day", pp_data_day_of_week_value,"--sport", sport_value])
 ]

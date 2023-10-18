@@ -28,7 +28,7 @@ decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-with open('processing/fantasy_actuals_'+str(year)+'_week_'+str(week)+'.csv', 'w', newline='') as file:
+with open('processing/fantasy_actuals_nfl_'+str(year)+'_week_'+str(week)+'.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(["year","week","name","fantasyScore"])
     

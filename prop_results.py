@@ -85,14 +85,20 @@ espn_results = json.load(f)
 
 # Function to clean player names
 def clean_name(name):
-    return str(name).replace("'", "").replace(".", "").replace("Jr", "").replace("II", "").replace("III", "").replace("Moehrig-Woodard", "Moehrig").replace("Joshua Palmer","Josh Palmer").replace("D/ST","DST").strip()
+    return str(name).replace("'", "").replace(".", "").replace("Jr", "").replace("Sr", "").replace("III", "").replace("IV", "").replace("II", "").replace("Moehrig-Woodard", "Moehrig").replace("Joshua Palmer","Josh Palmer").replace("D/ST","DST").strip()
+
+fantasy_sport = "nfl"
+if sport == "college-football":
+    fantasy_sport = "cfb"    
 
 # Read the CSV file
-df = pd.read_csv("processing/fantasy_actuals_"+year_value+"_week_"+week_value+".csv")
+df = pd.read_csv("processing/fantasy_actuals_"+fantasy_sport+"_"+year_value+"_week_"+week_value+".csv")
 
 # Create a dictionary of fantasy results with cleaned player names
 fantasy_results = df.to_dict(orient='records')
-fantasy_nfl_results = {clean_name(result["name"]): result for result in fantasy_results}
+fantasy_results_dict = {clean_name(result["name"]): result for result in fantasy_results}
+
+#print("fantasy_results_dict",fantasy_results_dict.keys())
 
 passing_stats = {}
 rushing_stats = {}
@@ -394,8 +400,8 @@ with open('processing/prop_report_'+year_value+'_week_'+week_value+'_game_day_'+
                 propStat = 0.0
             print(name,position,team_name,stat_type,line_score)
             print(stat_type,propStat)            
-        elif stat_type == "Fantasy Score" and name in fantasy_nfl_results:
-            propStat = float(fantasy_nfl_results[name]['fantasyScore'])
+        elif stat_type == "Fantasy Score" and name in fantasy_results_dict:
+            propStat = float(fantasy_results_dict[name]['fantasyScore'])
             print(name,position,team_name,stat_type,line_score)
             print(stat_type,propStat)            
         elif "in First" not in stat_type:

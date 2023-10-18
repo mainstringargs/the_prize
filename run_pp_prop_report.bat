@@ -8,11 +8,11 @@ set PP_DAY=friday
 set GAME_DAY=all
 set SPORT=college-football
 
-set YEAR=2023
-set WEEK=6
-set PP_DAY=saturday
-set GAME_DAY=all
-set SPORT=nfl
+rem set YEAR=2023
+rem set WEEK=6
+rem set PP_DAY=saturday
+rem set GAME_DAY=all
+rem set SPORT=nfl
 
 rem Construct the command
 set COMMAND=python driver.py --year %YEAR% --week %WEEK% --pp_day %PP_DAY% --game_day %GAME_DAY% --sport %SPORT%
