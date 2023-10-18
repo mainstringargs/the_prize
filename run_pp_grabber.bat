@@ -1,0 +1,1 @@
+start "" "%ProgramFiles%\Git\git-bash.exe" -c "python get_props_json.py && /usr/bin/bash --login -i"
