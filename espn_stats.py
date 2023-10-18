@@ -24,7 +24,7 @@ year = str(args.year).strip()
 week = str(args.week).strip()
 sport = str(args.sport).strip().lower()
 
-print("Grabbing....",year,week)
+print("Grabbing....",sport,year,week)
 
 # Specify the directory path you want to create
 directory_path = 'processing'
@@ -63,11 +63,13 @@ print("decoded_url",decoded_url, flush=True)
 
 def get_schedule(year, week):
     url = f"{decoded_url}{sport}/schedule?xhr=1&year={year}&week={week}"
+    print("get_schedule",url);
     json_data = get_json_data(url)
     return json_data
 
 def get_game_stats(game_id):
     url = f"{decoded_url}{sport}/boxscore?xhr=1&gameId={game_id}"
+    print("get_game_stats",url);
     json_data = get_json_data(url)
     
     if json_data:
