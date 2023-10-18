@@ -3,8 +3,14 @@ setlocal
 
 rem Define variables for Python script arguments
 set YEAR=2023
+set WEEK=7
+set PP_DAY=friday
+set GAME_DAY=all
+set SPORT=college-football
+
+set YEAR=2023
 set WEEK=6
-set PP_DAY=thursday
+set PP_DAY=saturday
 set GAME_DAY=all
 set SPORT=nfl
 

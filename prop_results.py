@@ -81,14 +81,14 @@ print("Generating results for",year_value,week_value);
 prop_lines = pd.read_csv("processing/prop_lines_"+year_value+"_week_"+week_value+".csv")
 
 f = open("processing/espn_"+sport+"_actuals_"+year_value+"_week_"+week_value+".json")
-espn_nfl_results = json.load(f)
+espn_results = json.load(f)
 
 # Function to clean player names
 def clean_name(name):
     return str(name).replace("'", "").replace(".", "").replace("Jr", "").replace("II", "").replace("III", "").replace("Moehrig-Woodard", "Moehrig").replace("Joshua Palmer","Josh Palmer").replace("D/ST","DST").strip()
 
 # Read the CSV file
-df = pd.read_csv('processing/fantasy_actuals_2023_week_6.csv')
+df = pd.read_csv("processing/fantasy_actuals_"+year_value+"_week_"+week_value+".csv")
 
 # Create a dictionary of fantasy results with cleaned player names
 fantasy_results = df.to_dict(orient='records')
@@ -105,8 +105,9 @@ kick_return_stats = {}
 punting_stats = {}
 kicking_stats = {}
 
-for stat_entry in espn_nfl_results:
+for stat_entry in espn_results:
     key = clean_name(stat_entry['name']) + " - "+ stat_entry['team']
+    #print("key",key);
     if "rushingYards" in stat_entry:
         rushing_stats[key] = stat_entry;
     elif "passingYards" in stat_entry:
@@ -130,11 +131,31 @@ for stat_entry in espn_nfl_results:
     else:
         print("No Handler for",stat_entry);
 
-filter = (prop_lines['league']=='NFL')
+prop_filter = "NFL"
+if sport == "nfl":
+    prop_filter = "NFL"
+elif sport == "college-football":
+    prop_filter = "CFB"    
+
+filter = (prop_lines['league']==prop_filter)
 prop_lines = prop_lines[filter]
 #filter = (prop_lines['position']!='DST')
 #prop_lines = prop_lines[filter]
 
+def find_team_name(team_name, market):
+    for result in espn_results:
+        team = result['team']
+
+        clean_team_name = team_name.replace("North Carolina State","NC State").replace("(FL)","").replace("(OH)","").replace("St.","").replace("State","").strip().lower();
+        clean_market = market.replace("North Carolina State","NC State").replace("(FL)","").replace("(FL)","").replace("(OH)","").replace("St.","").replace("State","").lower().strip();
+        #if 'Bearkats'.lower() in team_name.lower():
+         #   print(clean_team_name,"<<<>>>",clean_market,"<<<>>>",team.lower())
+        if clean_team_name in team.lower() and clean_market in team.lower():
+            print("FOUND",team,"for",team_name,"market",market);
+            return team
+    print("NO TEAM FOUND for",team_name,"market",market);
+    return "NO_TEAM";
+    
 
 with open('processing/prop_report_'+year_value+'_week_'+week_value+'_game_day_'+game_day+'_pp_day_'+pp_day+'.csv', 'w', newline='') as file:
     writer = csv.writer(file)
@@ -145,7 +166,17 @@ with open('processing/prop_report_'+year_value+'_week_'+week_value+'_game_day_'+
         league = prop_lines['league'][ind]
         name = clean_name(prop_lines['display_name'][ind])
         position = prop_lines['position'][ind]
-        team_name = prop_lines['team_name'][ind]
+        market = prop_lines['market'][ind]
+        
+        if sport == "college-football":
+            team_name = find_team_name(prop_lines['team_name'][ind], market);
+        else:
+            team_name = prop_lines['team_name'][ind]
+            
+        if team_name == "NO_TEAM":
+            print("!!!----> Skipping",name,position,market,"as there are no espn stats");
+            continue;
+        
         stat_type = prop_lines['stat_type'][ind]
         line_score = prop_lines['line_score'][ind]
         start_time = prop_lines['start_time'][ind]
@@ -166,7 +197,8 @@ with open('processing/prop_report_'+year_value+'_week_'+week_value+'_game_day_'+
             team_name = nfl_teams[name.replace("DST","").strip()];
         else:
             key = name + " - "+ team_name
-            
+        
+        #print("Loop Key",key)
         if game_day != day_name and game_day != "all":        
             print(name,team_name,game_day,"Prop is for",day_name,"ignoring")
             continue;
@@ -220,7 +252,7 @@ with open('processing/prop_report_'+year_value+'_week_'+week_value+'_game_day_'+
                 propStat = 0.0
             print(name,position,team_name,stat_type,line_score)
             print(stat_type,propStat)     
-        elif stat_type == "INT":
+        elif stat_type == "INT" or stat_type == "Pass INTs":
             if key in passing_stats:
                 stat = passing_stats[key]
                 propStat = float(stat['interceptions'])
@@ -264,6 +296,20 @@ with open('processing/prop_report_'+year_value+'_week_'+week_value+'_game_day_'+
                 propRushingStat = float(stat['rushingTouchdowns'])
                 total = total + propRushingStat
             propStat = total    
+            print(name,position,team_name,stat_type,line_score)
+            print(stat_type,propStat)   
+        elif stat_type == "Rec TDs":
+            propStat = 0.0
+            if key in receiving_stats:
+                stat = receiving_stats[key]
+                propStat = float(stat['receivingTouchdowns']) 
+            print(name,position,team_name,stat_type,line_score)
+            print(stat_type,propStat)   
+        elif stat_type == "Rush TDs":
+            propStat = 0.0
+            if key in rushing_stats:
+                stat = rushing_stats[key]
+                propStat = float(stat['rushingTouchdowns']) 
             print(name,position,team_name,stat_type,line_score)
             print(stat_type,propStat)   
         elif stat_type == "Pass+Rush Yds":
@@ -372,7 +418,7 @@ print(processed)
 
 sorted_data = processed.sort_values(by=['prop','result','team','name'])
 
-sorted_data.to_csv("results/all-data-raw_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv",index=False)
+sorted_data.to_csv("results/"+sport+"_all-data-raw_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv",index=False)
 
 
 # Existing code...
@@ -397,7 +443,7 @@ if 'Tie' in grouped_data.columns:
     grouped_data['Tie %'] = grouped_data['Tie %'].round(2)
 
 # Print the percentages
-grouped_data.to_csv("results/all-data-grouped-by-prop_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")
+grouped_data.to_csv("results/"+sport+"_all-data-grouped-by-prop_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")
 
 
 # After you've processed the data and calculated results
@@ -420,7 +466,7 @@ if 'Tie' in grouped_data.columns:
     grouped_data['Tie %'] = grouped_data['Tie %'].round(2)
 
 # Print the percentages
-grouped_data.to_csv("results/all-data-grouped-by-player_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")
+grouped_data.to_csv("results/"+sport+"_all-data-grouped-by-player_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")
 
 
 # Existing code...
@@ -445,5 +491,5 @@ if 'Tie' in grouped_data.columns:
     grouped_data['Tie %'] = grouped_data['Tie %'].round(2)
 
 # Print the percentages
-grouped_data.to_csv("results/all-data-grouped-by-player-prop_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")
+grouped_data.to_csv("results/"+sport+"_all-data-grouped-by-player-prop_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")
 
