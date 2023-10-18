@@ -64,6 +64,7 @@ parser.add_argument("--game_day", type=str, default=default_game_day, help="Day 
 parser.add_argument("--year", type=int, default=2023, help="Year")
 parser.add_argument("--week", type=int, default=1, help="Week")
 parser.add_argument("--pp_day", type=str, default=default_pp_day, help="Day of PP data")
+parser.add_argument("--sport", type=str, default="nfl", help="Sport")
 
 # Parse arguments
 args = parser.parse_args()
@@ -73,12 +74,13 @@ year_value = str(args.year)
 week_value = str(args.week)
 game_day = str(args.game_day).lower().strip()
 pp_day = str(args.pp_day).lower().strip()
+sport = str(args.sport).lower().strip()
 
 print("Generating results for",year_value,week_value);
 
 prop_lines = pd.read_csv("processing/prop_lines_"+year_value+"_week_"+week_value+".csv")
 
-f = open("processing/espn_nfl_actuals_"+year_value+"_week_"+week_value+".json")
+f = open("processing/espn_"+sport+"_actuals_"+year_value+"_week_"+week_value+".json")
 espn_nfl_results = json.load(f)
 
 # Function to clean player names

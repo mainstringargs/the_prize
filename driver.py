@@ -65,10 +65,10 @@ print("Found pp_file:", last_created_file, flush=True)
 
 # Define script paths
 script_paths = [
-    ("espn_nfl_stats.py", ["--year", year_value, "--week", week_value]),
+    ("espn_stats.py", ["--year", year_value, "--week", week_value, "--sport", "nfl"]),
     ("get_fantasy_data.py", ["--year", year_value, "--week", week_value]),
     ("props.py", ["--year", year_value, "--week", week_value, "--pp_file", last_created_file]),
-    ("nfl_prop_results.py", ["--year", year_value, "--week", week_value, "--game_day", game_day_of_week_value, "--pp_day", pp_data_day_of_week_value])
+    ("prop_results.py", ["--year", year_value, "--week", week_value, "--game_day", game_day_of_week_value, "--pp_day", pp_data_day_of_week_value,"--sport", "nfl"])
 ]
 
 # Run subprocesses for each script

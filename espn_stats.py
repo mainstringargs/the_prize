@@ -12,6 +12,7 @@ import base64
 # Define arguments
 parser = argparse.ArgumentParser(description="Script with command-line arguments")
 
+parser.add_argument("--sport", type=str, default="nfl", help="Sport")
 parser.add_argument("--year", type=int, default=2023, help="Year")
 parser.add_argument("--week", type=int, default=1, help="Week")
 
@@ -19,8 +20,9 @@ parser.add_argument("--week", type=int, default=1, help="Week")
 args = parser.parse_args()
 
 # Access argument values
-year = str(args.year)
-week = str(args.week)
+year = str(args.year).strip()
+week = str(args.week).strip()
+sport = str(args.sport).strip().lower()
 
 print("Grabbing....",year,week)
 
@@ -54,18 +56,18 @@ def get_json_data(url):
     return None
     
     
-url = "aHR0cHM6Ly9jZG4uZXNwbi5jb20vY29yZS9uZmwv"
+url = "aHR0cHM6Ly9jZG4uZXNwbi5jb20vY29yZS8="
 decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-def get_nfl_schedule(year, week):
-    url = f"{decoded_url}schedule?xhr=1&year={year}&week={week}"
+def get_schedule(year, week):
+    url = f"{decoded_url}{sport}/schedule?xhr=1&year={year}&week={week}"
     json_data = get_json_data(url)
     return json_data
 
-def get_nfl_game_stats(game_id):
-    url = f"{decoded_url}boxscore?xhr=1&gameId={game_id}"
+def get_game_stats(game_id):
+    url = f"{decoded_url}{sport}/boxscore?xhr=1&gameId={game_id}"
     json_data = get_json_data(url)
     
     if json_data:
@@ -111,7 +113,7 @@ def get_nfl_game_stats(game_id):
     
 
 # Call the function to retrieve and parse the JSON data
-json_data = get_nfl_schedule(year, week)
+json_data = get_schedule(year, week)
 
 date_format = "%Y-%m-%dT%H:%MZ"
         
@@ -139,11 +141,11 @@ if json_data:
 
         # Compare the two datetime objects
         if date < current_time:
-            all_games_stats.extend(get_nfl_game_stats(game[2]))
+            all_games_stats.extend(get_game_stats(game[2]))
         else:
             print(game,"hasn't happened yet")
 
     # Print the combined DataFrame
     #print(all_games_stats, flush=True)    
-    with open("processing/espn_nfl_actuals_"+str(year)+"_week_"+str(week)+".json", 'w', encoding='utf-8') as f:
+    with open("processing/espn_"+sport+"_actuals_"+str(year)+"_week_"+str(week)+".json", 'w', encoding='utf-8') as f:
         json.dump(all_games_stats, f, ensure_ascii=False, indent=4)
