@@ -55,7 +55,7 @@ decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-props = ["NFL","MLB","NHL"]
+props = ["NFL","MLB","NHL","NBA"]
 
 filter = prop_lines['league'].isin(props)
 prop_lines = prop_lines[filter]
@@ -97,6 +97,7 @@ def get_mapped_stat(stat_type):
         "Pitcher Strikeouts": "PitcherStrikeouts", 
         "Total Bases": "TotalBases",        
         "Walks Allowed": "WalksAllowed", 
+        "Hits Allowed": "HitsAllowed", 
         "Pitcher Fantasy Score": "PitcherFantasyScore", 
         "Hits+Runs+RBIS": "HitsAndRunsAndRBIs",
         "Hits+Runs+RBIs": "HitsAndRunsAndRBIs",
@@ -113,6 +114,19 @@ def get_mapped_stat(stat_type):
         "Assists": "Assists", 
         "Faceoffs Won": "FaceoffsWon", 
         "Hits": "Hits", 
+        "Points": "Points",  
+        "Rebounds": "Rebounds",        
+        "Assists": "Assists",       
+        "Turnovers": "Turnovers",  
+        "Steals": "Steals",      
+        "Blocked Shots": "BlockedShots",        
+        "3-PT Made": "ThreePointersMade",      
+        "Free Throws Made": "FreeThrowsMade",  
+        "Pts+Rebs+Asts": "PtsRebsAsts",               
+        "Blks+Stls": "BlksStls",  
+        "Pts+Asts": "PtsAsts",   
+        "Pts+Rebs": "PtsRebs",   
+        "Rebs+Asts": "RebsAsts",  
     }
     return stat_mapping.get(stat_type, "")
 
@@ -145,6 +159,7 @@ def find_streak(name, stat_type, line_score, json_data, comparator):
         return streak_check(line, mapped_stat, json_data, comparator)
     else:
         print("!!!!!!!!!$$$$Can't handle", stat_type)
+        no_handlers.append(name+" "+stat_type+" "+str(line_score))
 
 
 prop_info = {}
@@ -207,23 +222,30 @@ for ind in prop_lines.index:
         print("Skipping over",player_id,name,flush=True)
     val = val + 1
     
-    json_data = prop_info[player_id]
-    
-    # Example usage:
-# up_streak = find_streak("Player Name", "Pass Yards", "300", json_data, lambda x, y: x < y)
-# down_streak = find_streak("Player Name", "Rush Yards", "50", json_data, lambda x, y: x > y)
-
-    if "in first" not in stat_type.lower():
-        up_streak = find_streak(name, stat_type, line_score, json_data, lambda x, y: x < y)
-        down_streak = find_streak(name, stat_type, line_score, json_data, lambda x, y: x > y)
+    if player_id in prop_info:
+        json_data = prop_info[player_id]
         
-        if up_streak:
-            streaks.append("Up Streak"+" "+name+ " "+stat_type+" "+str(line_score))
-        if down_streak:
-            streaks.append("Down Streak"+" "+name+ " "+stat_type+" "+str(line_score))
+
+        if "in first" not in stat_type.lower():
+            up_streak = find_streak(name, stat_type, line_score, json_data, lambda x, y: x < y)
+            down_streak = find_streak(name, stat_type, line_score, json_data, lambda x, y: x > y)
+            
+            if up_streak:
+                streaks.append("Up Streak "+league+" "+name+ " "+stat_type+" "+str(line_score))
+            if down_streak:
+                streaks.append("Down Streak "+league+" "+name+ " "+stat_type+" "+str(line_score))
         
 print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)
+
+print("No Handler Report",flush=True)
+
+for no_handle in no_handlers:
+    print(no_handle,flush=True);
+
+print("Report Dumped",flush=True)
+
+streaks.sort()
 
 print("Report",flush=True)
 
