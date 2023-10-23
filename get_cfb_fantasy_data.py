@@ -39,12 +39,12 @@ with open('processing/fantasy_actuals_cfb_'+str(year)+'_week_'+str(week)+'.csv',
     data = {
         "sort": "FantasyPoints-desc",
         "pageSize": "3000",
-        "filters.season": "2023",
+        "filters.season": str(year),
         "filters.seasontype": "1",
         "filters.scope": "2",
         "filters.scoringsystem": "1",
-        "filters.startweek": "7",
-        "filters.endweek": "7",
+        "filters.startweek": str(week),
+        "filters.endweek": str(week),
     }
 
     print("request");
