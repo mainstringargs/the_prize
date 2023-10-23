@@ -10,8 +10,8 @@ import argparse
 parser = argparse.ArgumentParser(description="Script with command-line arguments")
 
 parser.add_argument("--year", type=int, default=2023, help="Year")
-parser.add_argument("--week", type=int, default=1, help="Week")
-parser.add_argument("--pp_file", type=str, default="", help="pp file")
+parser.add_argument("--week", type=int, default=7, help="Week")
+parser.add_argument("--pp_file", type=str, default="pp_data/prize_picks_projections_2023-10-23-080010.json", help="pp file")
 
 args = parser.parse_args()
 
@@ -35,9 +35,11 @@ for d in json_info["included"]:
 data = []
 for d in json_info['data']:
     data.append({
+        'player_id': d['relationships']['new_player']['data']['id'], 
         **players[d['relationships']['new_player']['data']['id']],
         **d['attributes']
     })
+
 
 df = pd.DataFrame(data)
 df = df.applymap(lambda x: x.strip().replace('\t','') if isinstance(x, str) else x)
