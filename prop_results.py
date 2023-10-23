@@ -85,7 +85,7 @@ espn_results = json.load(f)
 
 # Function to clean player names
 def clean_name(name):
-    return str(name).replace("'", "").replace(".", "").replace("Jr", "").replace("Sr", "").replace("III", "").replace("IV", "").replace("II", "").replace("Moehrig-Woodard", "Moehrig").replace("Joshua Palmer","Josh Palmer").replace("D/ST","DST").strip()
+    return str(name).replace("'", "").replace(".", "").replace("Jr", "").replace("Sr", "").replace("III", "").replace("IV", "").replace("II", "").replace("Moehrig-Woodard", "Moehrig").replace("Joshua Palmer","Josh Palmer").replace("D/ST","DST").replace("Bucky Irving", "MarKeise Irving").replace("Gabe Davis", "Gabriel Davis").strip()
 
 fantasy_sport = "nfl"
 if sport == "college-football":
@@ -162,7 +162,7 @@ def find_team_name(team_name, market):
     print("NO TEAM FOUND for",team_name,"market",market);
     return "NO_TEAM";
     
-
+no_handlers = []
 with open('processing/prop_report_'+year_value+'_week_'+week_value+'_game_day_'+game_day+'_pp_day_'+pp_day+'.csv', 'w', newline='') as file:
     writer = csv.writer(file)
      
@@ -405,8 +405,8 @@ with open('processing/prop_report_'+year_value+'_week_'+week_value+'_game_day_'+
             print(name,position,team_name,stat_type,line_score)
             print(stat_type,propStat)            
         elif "in First" not in stat_type:
-            print("!!!!No handler for:")
-            print("!!!!",name,position,team_name,stat_type,line_score)      
+            no_handlers.append("!!!!No handler for:")
+            no_handlers.append("!!!!"+" "+str(name)+" "+str(position)+" "+str(team_name)+" "+str(stat_type)+" "+str(line_score))
         
         if propStat > -9999:
             result = "Tie"
@@ -427,6 +427,10 @@ sorted_data = processed.sort_values(by=['prop','result','team','name'])
 sorted_data.to_csv("results/"+sport+"_all-data-raw_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv",index=False)
 
 
+for hh in no_handlers:
+    print(hh)
+
+
 # Existing code...
 
 # After you've processed the data and calculated results
@@ -440,13 +444,13 @@ grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
 grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
 
 # Round the percentages to 2 decimal places
-grouped_data['Over %'] = grouped_data['Over %'].round(2)
-grouped_data['Under %'] = grouped_data['Under %'].round(2)
+grouped_data['Over %'] = grouped_data['Over %'].round(1)
+grouped_data['Under %'] = grouped_data['Under %'].round(1)
 
 # Check if 'Tie' is present and calculate 'Tie %' if it is
 if 'Tie' in grouped_data.columns:
     grouped_data['Tie %'] = (grouped_data['Tie'] / grouped_data['Total']) * 100
-    grouped_data['Tie %'] = grouped_data['Tie %'].round(2)
+    grouped_data['Tie %'] = grouped_data['Tie %'].round(1)
 
 # Print the percentages
 grouped_data.to_csv("results/"+sport+"_all-data-grouped-by-prop_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")
@@ -463,13 +467,13 @@ grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
 grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
 
 # Round the percentages to 2 decimal places
-grouped_data['Over %'] = grouped_data['Over %'].round(2)
-grouped_data['Under %'] = grouped_data['Under %'].round(2)
+grouped_data['Over %'] = grouped_data['Over %'].round(1)
+grouped_data['Under %'] = grouped_data['Under %'].round(1)
 
 # Check if 'Tie' is present and calculate 'Tie %' if it is
 if 'Tie' in grouped_data.columns:
     grouped_data['Tie %'] = (grouped_data['Tie'] / grouped_data['Total']) * 100
-    grouped_data['Tie %'] = grouped_data['Tie %'].round(2)
+    grouped_data['Tie %'] = grouped_data['Tie %'].round(1)
 
 # Print the percentages
 grouped_data.to_csv("results/"+sport+"_all-data-grouped-by-player_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")
@@ -488,13 +492,13 @@ grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
 grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
 
 # Round the percentages to 2 decimal places
-grouped_data['Over %'] = grouped_data['Over %'].round(2)
-grouped_data['Under %'] = grouped_data['Under %'].round(2)
+grouped_data['Over %'] = grouped_data['Over %'].round(1)
+grouped_data['Under %'] = grouped_data['Under %'].round(1)
 
 # Check if 'Tie' is present and calculate 'Tie %' if it is
 if 'Tie' in grouped_data.columns:
     grouped_data['Tie %'] = (grouped_data['Tie'] / grouped_data['Total']) * 100
-    grouped_data['Tie %'] = grouped_data['Tie %'].round(2)
+    grouped_data['Tie %'] = grouped_data['Tie %'].round(1)
 
 # Print the percentages
 grouped_data.to_csv("results/"+sport+"_all-data-grouped-by-player-prop_"+year_value+"_week_"+week_value+"_game_day_"+game_day+'_pp_day_'+pp_day+".csv")

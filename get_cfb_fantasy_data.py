@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 
 default_year = 2023
-default_week = 7
+default_week = 8
 
 # Define arguments
 parser = argparse.ArgumentParser(description="Script with command-line arguments")
@@ -37,21 +37,50 @@ with open('processing/fantasy_actuals_cfb_'+str(year)+'_week_'+str(week)+'.csv',
     url = decoded_url
 
     data = {
-        "sort": "FantasyPoints-desc",
+        "sort": "FantasyPoints-asc",
         "pageSize": "3000",
+        "group": None,
+        "filter": None,       
+        "filters.scope": "2",
+        "filters.subscope": None,
         "filters.season": str(year),
         "filters.seasontype": "1",
-        "filters.scope": "2",
         "filters.scoringsystem": "1",
         "filters.startweek": str(week),
         "filters.endweek": str(week),
     }
 
-    print("request");
+    print("request asc");
     response = requests.post(url, data=data)
     response.raise_for_status()
 
-    players = response.json()["Data"]
+    players = list(response.json()["Data"])
+    
+    data = {
+        "sort": "FantasyPoints-desc",
+        "pageSize": "3000",
+        "group": None,
+        "filter": None,       
+        "filters.scope": "2",
+        "filters.subscope": None,
+        "filters.season": str(year),
+        "filters.seasontype": "1",
+        "filters.scoringsystem": "1",
+        "filters.startweek": str(week),
+        "filters.endweek": str(week),
+    }
+
+    print("request desc");
+    response = requests.post(url, data=data)
+    response.raise_for_status()    
+    
+    players.extend(response.json()["Data"])
+    players.reverse()
+    
+        # Remove duplicates by converting the list to a set and back to a list
+    #unique_players = list({player["Name"]: player for player in players}.values())
+
+    
     print("Number players",len(players));
     for player in players:
         if player['Week'] is not None:
