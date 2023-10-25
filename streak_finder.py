@@ -124,6 +124,7 @@ def get_mapped_stat(stat_type):
         "Points": "Points", 
         "Goals": "Goals", 
         "Shots On Goal": "ShotsOnGoal", 
+        "SOG + BS": "ShotsOnGoal,BlockedShots",
         "Assists": "Assists", 
         "Faceoffs Won": "FaceoffsWon", 
         "Hits": "Hits", 
