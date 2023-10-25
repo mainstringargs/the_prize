@@ -7,7 +7,7 @@ import json
 import time
 import os
 import subprocess
-import os
+import csv
 import fnmatch
 import datetime
 import time
@@ -48,6 +48,17 @@ if not os.path.exists(directory_path):
     print(f"Directory '{directory_path}' created.")
 else:
     print(f"Directory '{directory_path}' already exists.")
+    
+# Specify the directory path you want to create
+directory_path = 'streak_data'
+
+# Check if the directory already exists
+if not os.path.exists(directory_path):
+    # If it doesn't exist, create the directory
+    os.makedirs(directory_path)
+    print(f"Directory '{directory_path}' created.")
+else:
+    print(f"Directory '{directory_path}' already exists.")
 
 # Navigate to the desired URL (base 64 encoded)
 url = "aHR0cHM6Ly9hcGkucHJpemVwaWNrcy5jb20vcGxheWVycy8="
@@ -55,7 +66,7 @@ decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-props = ["NFL","MLB","NHL","NBA","CFB"]
+props = ["NFL"]
 
 filter = prop_lines['league'].isin(props)
 prop_lines = prop_lines[filter]
@@ -140,7 +151,9 @@ def get_mapped_stat(stat_type):
 
 def streak_check(line, mapped_stat, json_data, comparator):
     if len(json_data) < 5:
-        return False
+        return (False, -4321)
+    
+    prop_total = 0.0
     
     for stat in json_data:
         totals = stat["Totals"]
@@ -153,11 +166,15 @@ def streak_check(line, mapped_stat, json_data, comparator):
                 totals[stat] = 0.0
             total += totals[stat]
         
+        prop_total = prop_total + total;
+        
         print(f"{comparator} checking {total} with {line} for {mapped_stat}")
         if comparator(total, line):
-            return False
+            return (False, -999)
     
-    return True
+    
+    
+    return (True, (prop_total/5))
 
 def find_streak(name, stat_type, line_score, json_data, last_five_url, comparator):
     line = float(line_score)
@@ -168,7 +185,7 @@ def find_streak(name, stat_type, line_score, json_data, last_five_url, comparato
     else:
         print("!!!!!!!!!$$$$Can't handle", stat_type, last_five_url)
         no_handlers.append(name+" "+stat_type+" "+str(line_score)+" "+str(last_five_url))
-
+        return (False, -12345)
 
 prop_info = {}
 
@@ -238,10 +255,14 @@ for ind in prop_lines.index:
             up_streak = find_streak(name, stat_type, line_score, json_data, last_five_url, lambda x, y: x < y)
             down_streak = find_streak(name, stat_type, line_score, json_data, last_five_url, lambda x, y: x > y)
             
-            if up_streak:
-                streaks.append("Up Streak "+league+" "+name+ " "+stat_type+" "+str(line_score))
-            if down_streak:
-                streaks.append("Down Streak "+league+" "+name+ " "+stat_type+" "+str(line_score))
+            if up_streak[0]:
+                avg_diff = float(up_streak[1]) - float(line_score)
+                percent_diff = 100.0 * ((avg_diff) / ((float(up_streak[1]) + float(line_score))/2.0))
+                streaks.append(["Up",league,name.encode("ascii", errors="ignore").decode(),position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1)])
+            if down_streak[0]:
+                avg_diff = float(line_score) - float(down_streak[1])
+                percent_diff = 100.0 * ((avg_diff) / ((float(down_streak[1]) + float(line_score))/2.0))
+                streaks.append(["Down",league,name.encode("ascii", errors="ignore").decode(),position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1)])
         
 print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)
@@ -251,16 +272,32 @@ print("No Handler Report",flush=True)
 for no_handle in no_handlers:
     print(no_handle,flush=True);
 
-print("Report Dumped",flush=True)
+print("No Handler Report Dumped",flush=True)
 
 streaks.sort()
 
 print("Report",flush=True)
 
-for streak in streaks:
-    print(streak,flush=True);
+# Generate a timestamp
+timestamp = time.strftime("%Y-%m-%d-%H%M%S")
+
+csv_filename = f"streak_data/pp_streaks_{timestamp}.csv"
+
+with open(csv_filename, 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Streak","League","Name","Position","Prop","Line","Average","Raw Avg Distance","Percent Avg Distance"])
+
+    for streak in streaks:
+        print(streak,flush=True);
+        writer.writerow(streak)
     
-print("Report Dumped",flush=True)
+df = pd.read_csv(csv_filename)
+
+df = df.sort_values(by=['Streak', 'Name', 'Percent Avg Distance'])
+
+df.to_csv(csv_filename)
+
+print("CSV Report Dumped",flush=True)
 
 # Close the browser window
 driver.quit()

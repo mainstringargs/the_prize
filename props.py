@@ -2,9 +2,19 @@ import pandas as pd
 import requests
 from pandas import json_normalize
 import json
-
+import os
 import argparse
 
+# Specify the directory path you want to create
+directory_path = 'processing'
+
+# Check if the directory already exists
+if not os.path.exists(directory_path):
+    # If it doesn't exist, create the directory
+    os.makedirs(directory_path)
+    print(f"Directory '{directory_path}' created.")
+else:
+    print(f"Directory '{directory_path}' already exists.")
 
 # Define arguments
 parser = argparse.ArgumentParser(description="Script with command-line arguments")
