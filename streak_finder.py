@@ -86,6 +86,7 @@ def get_mapped_stat(stat_type):
         "Pass Attempts": "PassingAttempts",
         "Fumbles Lost": "FumblesLost",
         "INT": "Interceptions",
+        "Pass INTs": "Interceptions",
         "Receptions": "Receptions",
         "Receiving Yards": "ReceivingYards",
         "Rec TDs": "ReceivingTouchdowns",
@@ -95,11 +96,11 @@ def get_mapped_stat(stat_type):
         "Rush TDs": "RushingTouchdowns",
         "Fantasy Score": "FantasyScore",
         "Touchdowns": "Touchdowns",
-        "Pass+Rush+Rec TDs": "PassRushRecTD",
-        "Rush+Rec TDs": "RushRecTD",
+        "Pass+Rush+Rec TDs": "PassingTouchdowns,RushingTouchdowns,ReceivingTouchdowns",
+        "Rush+Rec TDs": "RushingTouchdowns,ReceivingTouchdowns",
         "Pass+Rush Yds": "PassingYards,RushingYards",
-        "Rec+Rush Yds": "RecPlusRushYards",
-        "Rush+Rec Yds": "RecPlusRushYards",
+        "Rec+Rush Yds": "RushingYards,ReceivingYards",
+        "Rush+Rec Yds": "RushingYards,ReceivingYards",
         "Sacks": "Sacks",
         "Tackles+Ast": "TackleAssists,Tackles",
         "FG Made": "FieldGoalsMade",
@@ -111,7 +112,6 @@ def get_mapped_stat(stat_type):
         "Hits Allowed": "HitsAllowed", 
         "Pitcher Fantasy Score": "PitcherFantasyScore", 
         "Hits+Runs+RBIS": "HitsAndRunsAndRBIs",
-        "Hits+Runs+RBIs": "HitsAndRunsAndRBIs",
         "Pitching Outs": "PitchingOuts",        
         "Pitcher Fantasy Score": "PitcherFantasyScore", 
         "Hitter Fantasy Score": "HitterFantasyScore", 
@@ -258,11 +258,11 @@ for ind in prop_lines.index:
             if up_streak[0]:
                 avg_diff = float(up_streak[1]) - float(line_score)
                 percent_diff = 100.0 * ((avg_diff) / ((float(up_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Up",league,name.encode("ascii", errors="ignore").decode(),position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1)])
+                streaks.append(["Up",league,name.encode("ascii", errors="ignore").decode(),position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
             if down_streak[0]:
                 avg_diff = float(line_score) - float(down_streak[1])
                 percent_diff = 100.0 * ((avg_diff) / ((float(down_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Down",league,name.encode("ascii", errors="ignore").decode(),position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1)])
+                streaks.append(["Down",league,name.encode("ascii", errors="ignore").decode(),position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
         
 print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)
@@ -285,7 +285,7 @@ csv_filename = f"streak_data/pp_streaks_{timestamp}.csv"
 
 with open(csv_filename, 'w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(["Streak","League","Name","Position","Prop","Line","Average","Raw Avg Distance","Percent Avg Distance"])
+    writer.writerow(["Streak","League","Name","Position","Prop","Line","Average","Raw Avg Distance","Percent Avg Distance","URL"])
 
     for streak in streaks:
         print(streak,flush=True);
