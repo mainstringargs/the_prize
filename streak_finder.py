@@ -293,7 +293,7 @@ with open(csv_filename, 'w', newline='') as file:
     
 df = pd.read_csv(csv_filename)
 
-df = df.sort_values(by=['Streak', 'Name', 'Percent Avg Distance'])
+df = df.sort_values(by=['Streak','Percent Avg Distance'], ascending=False)
 
 df.to_csv(csv_filename)
 
