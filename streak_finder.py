@@ -55,7 +55,7 @@ decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-props = ["NFL","MLB","NHL","NBA"]
+props = ["NFL","MLB","NHL","NBA","CFB"]
 
 filter = prop_lines['league'].isin(props)
 prop_lines = prop_lines[filter]
@@ -86,7 +86,7 @@ def get_mapped_stat(stat_type):
         "Touchdowns": "Touchdowns",
         "Pass+Rush+Rec TDs": "PassRushRecTD",
         "Rush+Rec TDs": "RushRecTD",
-        "Pass+Rush Yds": "PassPlusRushYards",
+        "Pass+Rush Yds": "PassingYards,RushingYards",
         "Rec+Rush Yds": "RecPlusRushYards",
         "Rush+Rec Yds": "RecPlusRushYards",
         "Sacks": "Sacks",
@@ -107,20 +107,28 @@ def get_mapped_stat(stat_type):
         "RBIs": "RBIs", 
         "Runs": "Runs",         
         "Hitter Strikeouts": "HitterStrikeouts",   
+        "Earned Runs Allowed": "EarnedRunsAllowed",
         "Goalie Saves": "GoalieSaves",        
         #"Time On Ice": "TimeOnIce", 
         "Points": "Points", 
+        "Goals": "Goals", 
         "Shots On Goal": "ShotsOnGoal", 
         "Assists": "Assists", 
         "Faceoffs Won": "FaceoffsWon", 
         "Hits": "Hits", 
         "Points": "Points",  
         "Rebounds": "Rebounds",        
+        "Offensive Rebounds": "OffensiveRebounds",   
+        "Defensive Rebounds": "DefensiveRebounds",   
         "Assists": "Assists",       
         "Turnovers": "Turnovers",  
         "Steals": "Steals",      
         "Blocked Shots": "BlockedShots",        
-        "3-PT Made": "ThreePointersMade",      
+        "FG Attempted": "FieldGoalsAttempted",  
+        "FG Made": "FieldGoalsMade",  
+        "FG Missed": "FieldGoalsMissed",  
+        "3-PT Made": "ThreePointersMade",    
+        "3-PT Attempted": "ThreePointersAttempted",         
         "Free Throws Made": "FreeThrowsMade",  
         "Pts+Rebs+Asts": "PtsRebsAsts",               
         "Blks+Stls": "BlksStls",  
@@ -151,15 +159,15 @@ def streak_check(line, mapped_stat, json_data, comparator):
     
     return True
 
-def find_streak(name, stat_type, line_score, json_data, comparator):
+def find_streak(name, stat_type, line_score, json_data, last_five_url, comparator):
     line = float(line_score)
     mapped_stat = get_mapped_stat(stat_type)
     
     if mapped_stat:
         return streak_check(line, mapped_stat, json_data, comparator)
     else:
-        print("!!!!!!!!!$$$$Can't handle", stat_type)
-        no_handlers.append(name+" "+stat_type+" "+str(line_score))
+        print("!!!!!!!!!$$$$Can't handle", stat_type, last_five_url)
+        no_handlers.append(name+" "+stat_type+" "+str(line_score)+" "+str(last_five_url))
 
 
 prop_info = {}
@@ -227,8 +235,8 @@ for ind in prop_lines.index:
         
 
         if "in first" not in stat_type.lower():
-            up_streak = find_streak(name, stat_type, line_score, json_data, lambda x, y: x < y)
-            down_streak = find_streak(name, stat_type, line_score, json_data, lambda x, y: x > y)
+            up_streak = find_streak(name, stat_type, line_score, json_data, last_five_url, lambda x, y: x < y)
+            down_streak = find_streak(name, stat_type, line_score, json_data, last_five_url, lambda x, y: x > y)
             
             if up_streak:
                 streaks.append("Up Streak "+league+" "+name+ " "+stat_type+" "+str(line_score))
