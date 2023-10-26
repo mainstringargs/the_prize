@@ -104,7 +104,7 @@ def get_mapped_stat(stat_type):
         "Sacks": "Sacks",
         "Tackles+Ast": "TackleAssists,Tackles",
         "FG Made": "FieldGoalsMade",
-        "Kicking Points": "KickingPoints",
+        #"Kicking Points": "KickingPoints",
         "Punts": "Punts",
         "Pitcher Strikeouts": "PitcherStrikeouts", 
         "Total Bases": "TotalBases",        
@@ -157,6 +157,9 @@ def streak_check(line, mapped_stat, json_data, comparator):
     prop_total = 0.0
     
     for stat in json_data:
+        if 'Totals' not in stat:
+            return (False, -1234)
+        
         totals = stat["Totals"]
         stat_list = mapped_stat.split(",")
         total = 0.0
