@@ -186,5 +186,9 @@ if json_data:
 
     # Print the combined DataFrame
     #print(all_games_stats, flush=True)    
-    with open("processing/espn_"+sport+"_actuals_"+str(year)+"_week_"+str(week)+".json", 'w', encoding='utf-8') as f:
-        json.dump(all_games_stats, f, ensure_ascii=False, indent=4)
+    if sport != "nba":
+        with open("processing/espn_"+sport+"_actuals_"+str(year)+"_week_"+str(week)+".json", 'w', encoding='utf-8') as f:
+            json.dump(all_games_stats, f, ensure_ascii=False, indent=4)
+    else:
+        with open("processing/espn_"+sport+"_actuals_"+str(formatted_date)+".json", 'w', encoding='utf-8') as f:
+            json.dump(all_games_stats, f, ensure_ascii=False, indent=4)
