@@ -4,7 +4,7 @@ import csv
 from collections.abc import Mapping, Iterable
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import argparse
 import base64
@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser(description="Script with command-line arguments
 parser.add_argument("--sport", type=str, default="nfl", help="Sport")
 parser.add_argument("--year", type=int, default=2023, help="Year")
 parser.add_argument("--week", type=int, default=1, help="Week")
+parser.add_argument("--game_day", type=str, default="Friday", help="Game Day")
 
 # Parse arguments
 args = parser.parse_args()
@@ -23,8 +24,9 @@ args = parser.parse_args()
 year = str(args.year).strip()
 week = str(args.week).strip()
 sport = str(args.sport).strip().lower()
+game_day = str(args.game_day).strip().lower()
 
-print("Grabbing....",sport,year,week)
+print("Grabbing....",sport,year,week,game_day)
 
 # Specify the directory path you want to create
 directory_path = 'processing'
@@ -61,8 +63,8 @@ decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-def get_schedule(year, week):
-    url = f"{decoded_url}{sport}/schedule?xhr=1&year={year}&week={week}"
+def get_schedule(year, week, game_date):
+    url = f"{decoded_url}{sport}/schedule?xhr=1&year={year}&week={week}&date={game_date}"
     print("get_schedule",url);
     json_data = get_json_data(url)
     return json_data
@@ -86,6 +88,11 @@ def get_game_stats(game_id):
                 for athlete in stat_cat.get("athletes", []):
                     athlete_name = athlete.get("athlete", {}).get("displayName", "")
                     stats = athlete.get("stats")
+                    
+                    if len(stats) == 0:
+                        print("No status for",athlete_name,"DNP?")
+                        continue;
+                    
                     athlete_stats = {
                         "name": athlete_name,
                         "team": home_team_name if home_flag else away_team_name,
@@ -113,11 +120,39 @@ def get_game_stats(game_id):
 
     return []
     
+day_mapping = {
+    0: 'monday',
+    1: 'tuesday',
+    2: 'wednesday',
+    3: 'thursday',
+    4: 'friday',
+    5: 'saturday',
+    6: 'sunday'
+}
+
+reversed_day_mapping = dict(zip(day_mapping.values(), day_mapping.keys()))
+    
+# Define the target day of the week (0 for Monday, 1 for Tuesday, etc.)
+target_day_of_week = reversed_day_mapping[game_day]  # 3 corresponds to Thursday
+
+# Get the current date
+today = datetime.now()
+
+# Calculate the difference in days between today and the target day of the week
+days_until_target = (today.weekday() - target_day_of_week) % 7
+
+# Subtract the difference in days to find the last matching date
+last_matching_date = today - timedelta(days=days_until_target)
+
+# Format the date as YYYYMMDD
+formatted_date = last_matching_date.strftime('%Y%m%d')
 
 # Call the function to retrieve and parse the JSON data
-json_data = get_schedule(year, week)
+json_data = get_schedule(year, week, formatted_date)
 
 date_format = "%Y-%m-%dT%H:%MZ"
+
+
         
 if json_data:
     schedule_data = json_data.get("content", {}).get("schedule", {})
@@ -131,18 +166,20 @@ if json_data:
     all_games_stats = []
     
     for game in all_scheduled_games:
-        print("processing",game,(game[2]))
         # Call the function to retrieve and merge the stats into a single DataFrame
 
         date = datetime.strptime(game[0], date_format)
         
         date = pytz.utc.localize(date)
+        game_weekday = day_mapping[date.weekday()]
 
         # Get the current time in UTC
         current_time = datetime.now(pytz.utc)
+        print(game_weekday)
 
         # Compare the two datetime objects
-        if date < current_time:
+        if (date < current_time and sport != "nba") or (date < current_time and sport == "nba" and game_day.lower()==game_weekday.lower()):
+            print("found",game,(game[2]))
             all_games_stats.extend(get_game_stats(game[2]))
         else:
             print(game,"hasn't happened yet")
