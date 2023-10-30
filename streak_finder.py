@@ -12,7 +12,7 @@ import fnmatch
 import datetime
 import time
 import random
-
+import pytz
 import argparse
 import base64
 import pandas as pd
@@ -149,6 +149,17 @@ def get_mapped_stat(stat_type):
         "Rebs+Asts": "RebsAsts",  
     }
     return stat_mapping.get(stat_type, "")
+    
+today = datetime.datetime.now()
+# Create a Central Time Zone (CT) object
+ct_timezone = pytz.timezone('US/Central')
+# Convert the local time to the Central Time Zone
+ct_time = today.astimezone(ct_timezone)
+
+# Calculate the date two days before today
+six_months_ago = ct_time - datetime.timedelta(days=180)
+
+date_format = "%Y-%m-%dT%H:%M:%S%z"  
 
 def streak_check(line, mapped_stat, json_data, comparator):
     if len(json_data) < 5:
@@ -163,6 +174,12 @@ def streak_check(line, mapped_stat, json_data, comparator):
         totals = stat["Totals"]
         stat_list = mapped_stat.split(",")
         total = 0.0
+        
+        startTime = datetime.datetime.strptime(stat["GameStartTime"], date_format)
+        
+        if startTime < six_months_ago:
+            print("Game is too hold... ignoring")
+            return (False, -987654321)
         
         for stat in stat_list:
             if stat not in totals:
@@ -262,11 +279,11 @@ for ind in prop_lines.index:
             if up_streak[0]:
                 avg_diff = float(up_streak[1]) - float(line_score)
                 percent_diff = 100.0 * ((avg_diff) / ((float(up_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Up",league,name.encode("ascii", errors="ignore").decode(),position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
+                streaks.append(["Up",league,name,position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
             if down_streak[0]:
                 avg_diff = float(line_score) - float(down_streak[1])
                 percent_diff = 100.0 * ((avg_diff) / ((float(down_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Down",league,name.encode("ascii", errors="ignore").decode(),position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
+                streaks.append(["Down",league,name,position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
         
 print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)

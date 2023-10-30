@@ -4,6 +4,25 @@ import json
 import base64
 import csv
 import pandas as pd
+import argparse
+import base64
+import pandas as pd
+
+
+
+# Define arguments
+parser = argparse.ArgumentParser(description="Script with command-line arguments")
+
+today = datetime.datetime.now()
+yesterday = today - datetime.timedelta(days=1)
+formatted_date = yesterday.strftime("%Y-%m-%d")
+
+parser.add_argument("--event_date", type=str, default=formatted_date, help="event_date")
+
+
+# Parse arguments
+args = parser.parse_args()
+
 
 # Specify the directory path you want to create
 pp_result_data_path = 'pp_result_data'
@@ -21,6 +40,11 @@ def find_newest_file_from_day(directory_path, specific_day):
         # Check if the file is a regular file (not a directory)
         if os.path.isfile(file_path):
             file_time = os.path.getctime(file_path)
+            if "results_prop_info" in filename:
+                file_time = filename.replace("results_prop_info_","").replace(".json","")
+                file_time = datetime.datetime.strptime(file_time, "%Y-%m-%d").timestamp()
+            
+            print(file_time)
             file_date = str(datetime.datetime.fromtimestamp(file_time).date())
 
             # Check if the file's date matches the specific day
@@ -33,9 +57,12 @@ def find_newest_file_from_day(directory_path, specific_day):
     return newest_file
     
 # Get today's date
-today = datetime.datetime.now()
+event_date = args.event_date
 
-formatted_date = today.strftime("%Y-%m-%d")
+
+print("event_date is",event_date)
+
+formatted_date = event_date
 newest_file = find_newest_file_from_day(pp_result_data_path, formatted_date)
 
 print("found",newest_file)
@@ -219,7 +246,7 @@ for no_handler in no_handlers_list:
 print("END NO HANDLER REPORT")
 
 
-processed = pd.read_csv('processing/prop_report_'+formatted_date+'.csv')
+processed = pd.read_csv('processing/prop_report_'+formatted_date+'.csv', encoding='unicode_escape')
 
 #print(processed)
 
@@ -228,9 +255,11 @@ df = processed.sort_values(by=['prop','result','team','name'])
 df.to_csv("results/all-data-raw_"+formatted_date+".csv",index=False)
 
 for sport in json_info:
+    print("SPORT",sport)
     sorted_data = df[df['league'].isin([sport])]
     print(sorted_data)
 
+    df.to_csv("results/"+sport+"_all-data-raw_"+formatted_date+".csv",index=False)
 
     # After you've processed the data and calculated results
     grouped_data = sorted_data.groupby(['prop', 'result']).size().unstack(fill_value=0)
@@ -239,9 +268,16 @@ for sport in json_info:
     grouped_data['Total'] = grouped_data.sum(axis=1)
 
     # Calculate percentages for 'Over' and 'Under' and round to 2 decimal places
-    grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
-    grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
-
+    if 'Over' in grouped_data:
+        grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
+    else:
+        grouped_data['Over %'] = 0
+        
+    if 'Under' in grouped_data:
+        grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
+    else:
+        grouped_data['Under %'] = 0
+        
     # Round the percentages to 2 decimal places
     grouped_data['Over %'] = grouped_data['Over %'].round(1)
     grouped_data['Under %'] = grouped_data['Under %'].round(1)
@@ -262,9 +298,16 @@ for sport in json_info:
     grouped_data['Total'] = grouped_data.sum(axis=1)
 
     # Calculate percentages for 'Over' and 'Under' and round to 2 decimal places
-    grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
-    grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
-
+    if 'Over' in grouped_data:
+        grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
+    else:
+        grouped_data['Over %'] = 0
+    
+    if 'Under' in grouped_data:
+        grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
+    else:
+        grouped_data['Under %'] = 0
+        
     # Round the percentages to 2 decimal places
     grouped_data['Over %'] = grouped_data['Over %'].round(1)
     grouped_data['Under %'] = grouped_data['Under %'].round(1)
@@ -287,8 +330,15 @@ for sport in json_info:
     grouped_data['Total'] = grouped_data.sum(axis=1)
 
     # Calculate percentages for 'Over' and 'Under' and round to 2 decimal places
-    grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
-    grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
+    if 'Over' in grouped_data:
+        grouped_data['Over %'] = (grouped_data['Over'] / grouped_data['Total']) * 100
+    else:
+        grouped_data['Over %'] = 0
+    
+    if 'Under' in grouped_data:
+        grouped_data['Under %'] = (grouped_data['Under'] / grouped_data['Total']) * 100
+    else:
+        grouped_data['Under %'] = 0
 
     # Round the percentages to 2 decimal places
     grouped_data['Over %'] = grouped_data['Over %'].round(1)
