@@ -15,7 +15,7 @@ def run_pp_results_grabber_json():
 schedule.every().day.at("07:00").do(run_pp_results_grabber_json)
 schedule.every().day.at("08:00").do(run_get_props_json)
 schedule.every().day.at("14:00").do(run_get_props_json)
-schedule.every().day.at("20:00").do(run_get_props_json)
+schedule.every().day.at("23:00").do(run_get_props_json)
 
 
 while True:

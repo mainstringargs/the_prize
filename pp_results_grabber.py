@@ -95,7 +95,7 @@ df = df.applymap(lambda x: x.strip().replace('\t','') if isinstance(x, str) else
 
 filter = df['combo']==True
 filtered_df = df[~filter]
-filtered_df = filtered_df[df['league'].isin(['NFL', 'NBA', 'MLB','CFB','NHL'])]
+filtered_df = filtered_df[df['league'].isin(['NFL', 'NBA', 'MLB','NHL', 'CFB'])]
 
 
 data_dict = filtered_df.to_dict(orient='records')
@@ -119,7 +119,7 @@ for data in data_dict:
     league = data['league']
 
     last_five_url = decoded_url+str(player_id)+"/last_five_games?league_name="+str(league)
-    print("Analyzing",player_id,name,league, last_five_url)
+
     #print("last_five_url",last_five_url)
     #print("start_time",data['start_time'])
     
@@ -127,7 +127,7 @@ for data in data_dict:
 
     # Parse the string to create a datetime object
     start_time_dt = datetime.datetime.strptime(data['start_time'], date_format)
-    
+    print("Analyzing",player_id,name,league, last_five_url,start_time_dt)
     if are_same_day(start_time_dt, yesterday) and not data['combo'] and not data['is_promo']:
         #print("Found match",data)
         if league not in prop_info or player_id not in prop_info[league]:
@@ -182,7 +182,7 @@ print("We have",len(prop_info),"data")
 # Convert the dictionary to a JSON string
 json_string = json.dumps(prop_info, indent=4)
 
-file_loc = pp_result_data_path+"/results_prop_info_"+formatted_date+".json";
+file_loc = pp_result_data_path+"/results_prop_info_"+yesterday.strftime("%Y-%m-%d")+".json";
 # Alternatively, you can write the JSON to a file
 with open(file_loc, "w") as json_file:
     json_file.write(json_string)
