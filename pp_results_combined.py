@@ -1,5 +1,6 @@
 import os
 import csv
+import datetime
 
 # Directory containing the CSV files
 directory = "results"
@@ -55,9 +56,24 @@ for filename in os.listdir(directory):
                 league_data[league][prop]['Under %'] = under_percentage
                 league_data[league][prop]['Push %'] = push_percentage
 
+# Specify the directory path you want to create
+directory_path = 'combined'
+
+# Check if the directory already exists
+if not os.path.exists(directory_path):
+    # If it doesn't exist, create the directory
+    os.makedirs(directory_path)
+    print(f"Directory '{directory_path}' created.")
+else:
+    print(f"Directory '{directory_path}' already exists.")
+
+
+today = datetime.datetime.now()
+formatted_date = today.strftime("%Y-%m-%d")
+
 # Generate and save a condensed report for each league, with all columns
 for league, prop_data in league_data.items():
-    report_filename = f"{league}_condensed_report.csv"
+    report_filename = f"{directory_path}/{league}_condensed_report_{formatted_date}.csv"
     with open(report_filename, 'w', newline='') as reportfile:
         writer = csv.DictWriter(reportfile, fieldnames=['prop', 'Over', 'Under', 'Push', 'Total', 'Over %', 'Under %', 'Push %'])
         writer.writeheader()

@@ -8,6 +8,8 @@ import argparse
 import base64
 import pandas as pd
 
+import datetime
+import pytz
 
 
 # Define arguments
@@ -143,14 +145,18 @@ def get_mapped_stat(stat_type):
 
 
 def get_prop_for_event(prop, player):
-    #print(prop)
-
     # Parse the string to create a datetime object
     prop_start_time_dt = datetime.datetime.strptime(prop['start_time'], date_format)
 
     for event in player["last_five_results"]:
-        event_start_time_dt =  datetime.datetime.strptime(event["GameStartTime"], date_format)
-        if (prop_start_time_dt==event_start_time_dt):
+        event_start_time_dt = datetime.datetime.strptime(event["GameStartTime"], date_format)
+
+        # Normalize time zones using pytz
+        prop_start_time_dt = prop_start_time_dt.astimezone(pytz.UTC)
+        event_start_time_dt = event_start_time_dt.astimezone(pytz.UTC)
+
+        # Compare only the date part
+        if prop_start_time_dt.date() == event_start_time_dt.date():
             return event
     return None
 
@@ -258,8 +264,13 @@ for sport in json_info:
     print("SPORT",sport)
     sorted_data = df[df['league'].isin([sport])]
     print(sorted_data)
+    
 
-    df.to_csv("results/"+sport+"_all-data-raw_"+formatted_date+".csv",index=False)
+    if sorted_data.shape[0] == 0:
+        print("SPORT",sport,"is empty")
+        continue;
+        
+    sorted_data.to_csv("results/"+sport+"_all-data-raw_"+formatted_date+".csv",index=False)
 
     # After you've processed the data and calculated results
     grouped_data = sorted_data.groupby(['prop', 'result']).size().unstack(fill_value=0)

@@ -12,12 +12,27 @@ import fnmatch
 import datetime
 import time
 import random
-
+import csv
+import pandas as pd
 import argparse
 import base64
 import pandas as pd
 
 driver = webdriver.Chrome()
+
+
+# Define arguments
+parser = argparse.ArgumentParser(description="Script with command-line arguments")
+
+today = datetime.datetime.now()
+yesterday = today - datetime.timedelta(days=1)
+formatted_date = yesterday.strftime("%Y-%m-%d")
+
+parser.add_argument("--event_date", type=str, default=formatted_date, help="event_date")
+
+
+# Parse arguments
+args = parser.parse_args()
 
 # Specify the directory path you want to create
 pp_result_data_path = 'pp_result_data'
@@ -53,21 +68,40 @@ def find_newest_file_from_day(directory_path, specific_day):
 
     return newest_file
 
+def find_oldest_file_from_day(directory_path, specific_day):
+    # Initialize variables to store information about the oldest file
+    oldest_file = None
+    oldest_file_time = None
+
+    # Iterate over the files in the directory
+    for filename in os.listdir(directory_path):
+        file_path = os.path.join(directory_path, filename)
+
+        # Check if the file is a regular file (not a directory)
+        if os.path.isfile(file_path):
+            file_time = os.path.getctime(file_path)
+            file_date = str(datetime.datetime.fromtimestamp(file_time).date())
+
+            # Check if the file's date matches the specific day
+            if file_date == specific_day:
+                # If it's the first file matching the specific day or older than the previous oldest file
+                if oldest_file is None or file_time < oldest_file_time:
+                    oldest_file = file_path
+                    oldest_file_time = file_time
+
+    return oldest_file
 
 
+event_date = args.event_date
 # Get today's date
-today = datetime.datetime.now()
-# Calculate the date two days before today
-two_days_ago = today - datetime.timedelta(days=2)
-formatted_date = two_days_ago.strftime("%Y-%m-%d")
+formatted_date = event_date
 
-print(f"Two days before today was {formatted_date}.")
+print(f"Running for date {formatted_date}.")
 
-yesterday = today - datetime.timedelta(days=1)
 
 # Example usage:
 directory_path = "pp_data"
-newest_file = find_newest_file_from_day(directory_path, formatted_date)
+newest_file = find_oldest_file_from_day(directory_path, formatted_date)
 
 print("newest_file",newest_file)
 
@@ -111,6 +145,8 @@ prop_info = {}
 
 val = 0;
 
+event_date_dt = datetime.datetime.strptime(event_date, "%Y-%m-%d")
+
 for data in data_dict:
     val = val + 1;
     print("At "+str(val)+"/"+str(len(data_dict)));
@@ -128,7 +164,7 @@ for data in data_dict:
     # Parse the string to create a datetime object
     start_time_dt = datetime.datetime.strptime(data['start_time'], date_format)
     print("Analyzing",player_id,name,league, last_five_url,start_time_dt)
-    if are_same_day(start_time_dt, yesterday) and not data['combo'] and not data['is_promo']:
+    if are_same_day(start_time_dt, event_date_dt) and not data['combo'] and not data['is_promo']:
         #print("Found match",data)
         if league not in prop_info or player_id not in prop_info[league]:
          
@@ -147,7 +183,7 @@ for data in data_dict:
                 
 
             # Generate a random sleep duration between 3 and 30 seconds
-            sleep_duration = random.uniform(1, 5)
+            sleep_duration = random.uniform(0, 3)
             print("sleeping for",sleep_duration, flush=True)
 
             # Sleep for the generated duration
@@ -182,7 +218,7 @@ print("We have",len(prop_info),"data")
 # Convert the dictionary to a JSON string
 json_string = json.dumps(prop_info, indent=4)
 
-file_loc = pp_result_data_path+"/results_prop_info_"+yesterday.strftime("%Y-%m-%d")+".json";
+file_loc = pp_result_data_path+"/results_prop_info_"+event_date+".json";
 # Alternatively, you can write the JSON to a file
 with open(file_loc, "w") as json_file:
     json_file.write(json_string)
