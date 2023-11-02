@@ -246,7 +246,7 @@ for ind in prop_lines.index:
                 
 
             # Generate a random sleep duration between 3 and 30 seconds
-            sleep_duration = random.uniform(1, 5)
+            sleep_duration = random.uniform(0, 3)
             print("sleeping for",sleep_duration, flush=True)
 
             # Sleep for the generated duration
@@ -279,11 +279,11 @@ for ind in prop_lines.index:
             if up_streak[0]:
                 avg_diff = float(up_streak[1]) - float(line_score)
                 percent_diff = 100.0 * ((avg_diff) / ((float(up_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Up",league,name,position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
+                streaks.append(["Up",league,name,player_id,position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
             if down_streak[0]:
                 avg_diff = float(line_score) - float(down_streak[1])
                 percent_diff = 100.0 * ((avg_diff) / ((float(down_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Down",league,name,position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
+                streaks.append(["Down",league,name,player_id,position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
         
 print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)
@@ -306,7 +306,7 @@ csv_filename = f"streak_data/pp_streaks_{timestamp}.csv"
 
 with open(csv_filename, 'w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(["Streak","League","Name","Position","Prop","Line","Average","Raw Avg Distance","Percent Avg Distance","URL"])
+    writer.writerow(["Streak","League","Name","Id","Position","Prop","Line","Average","Raw Avg Distance","Percent Avg Distance","URL"])
 
     for streak in streaks:
         print(streak,flush=True);

@@ -1,9 +1,19 @@
 import os
 import csv
-import datetime
+from datetime import datetime
 
 # Directory containing the CSV files
 directory = "results"
+
+# Directory to store the condensed CSVs
+output_directory = "combined"
+
+# Create the output directory if it doesn't exist
+if not os.path.exists(output_directory):
+    os.makedirs(output_directory)
+
+# Get the current date in YYYY-MM-DD format
+current_date = datetime.now().strftime('%Y-%m-%d')
 
 # Initialize a dictionary to store combined data for each league and prop
 league_data = {}
@@ -17,19 +27,11 @@ for filename in os.listdir(directory):
         with open(file_path, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
+                #print(row)
                 prop = row['prop']
                 over = int(row.get('Over', 0))  # Use get() to handle missing key
                 under = int(row.get('Under', 0))  # Use get() to handle missing key
                 push = int(row.get('Push', 0))  # Use get() to handle missing key
-                total = over + under + push  # Calculate total as the sum of Over, Under, and Push
-                over_percentage = round((over / total) * 100, 1) if total > 0 else 0.0
-                under_percentage = round((under / total) * 100, 1) if total > 0 else 0.0
-                push_percentage = round((push / total) * 100, 1) if total > 0 else 0.0
-
-                # Ensure that percentages do not exceed 100%
-                over_percentage = min(over_percentage, 100)
-                under_percentage = min(under_percentage, 100)
-                push_percentage = min(push_percentage, 100)
 
                 # Initialize league data if it doesn't exist
                 if league not in league_data:
@@ -41,52 +43,50 @@ for filename in os.listdir(directory):
                         'Over': 0,
                         'Under': 0,
                         'Push': 0,
-                        'Total': 0,
-                        'Over %': 0.0,
-                        'Under %': 0.0,
-                        'Push %': 0.0
                     }
 
-                # Combine and recalculate data for the league and prop
+                # Combine data for the league and prop
                 league_data[league][prop]['Over'] += over
                 league_data[league][prop]['Under'] += under
                 league_data[league][prop]['Push'] += push
-                league_data[league][prop]['Total'] += total
-                league_data[league][prop]['Over %'] = over_percentage
-                league_data[league][prop]['Under %'] = under_percentage
-                league_data[league][prop]['Push %'] = push_percentage
 
-# Specify the directory path you want to create
-directory_path = 'combined'
-
-# Check if the directory already exists
-if not os.path.exists(directory_path):
-    # If it doesn't exist, create the directory
-    os.makedirs(directory_path)
-    print(f"Directory '{directory_path}' created.")
-else:
-    print(f"Directory '{directory_path}' already exists.")
-
-
-today = datetime.datetime.now()
-formatted_date = today.strftime("%Y-%m-%d")
-
-# Generate and save a condensed report for each league, with all columns
+# Calculate "Over %" percentages
 for league, prop_data in league_data.items():
-    report_filename = f"{directory_path}/{league}_condensed_report_{formatted_date}.csv"
-    with open(report_filename, 'w', newline='') as reportfile:
+    for prop, data in prop_data.items():
+        total = data['Over'] + data['Under'] + data['Push']
+        over_percentage = round((data['Over'] / total) * 100, 1) if total > 0 else 0.0
+        data['Over %'] = over_percentage
+
+# Generate and save a condensed report for each league, with all columns and percentages
+for league, prop_data in league_data.items():
+    report_filename = f"{league}_condensed_report_{current_date}.csv"
+    report_path = os.path.join(output_directory, report_filename)
+
+    with open(report_path, 'w', newline='') as reportfile:
         writer = csv.DictWriter(reportfile, fieldnames=['prop', 'Over', 'Under', 'Push', 'Total', 'Over %', 'Under %', 'Push %'])
         writer.writeheader()
-        for prop, data in prop_data.items():
+
+        # Sort the data by "Over %" column (descending order)
+        sorted_data = sorted(
+            prop_data.items(),
+            key=lambda item: item[1]['Over %'],
+            reverse=True
+        )
+
+        for prop, data in sorted_data:
+            total = data['Over'] + data['Under'] + data['Push']
+            over_percentage = data['Over %']  # Use the precalculated "Over %" value
+            under_percentage = round((data['Under'] / total) * 100, 1) if total > 0 else 0.0
+            push_percentage = round((data['Push'] / total) * 100, 1) if total > 0 else 0.0
             writer.writerow({
                 'prop': prop,
                 'Over': data['Over'],
                 'Under': data['Under'],
                 'Push': data['Push'],
-                'Total': data['Total'],
-                'Over %': data['Over %'],
-                'Under %': data['Under %'],
-                'Push %': data['Push %']
+                'Total': total,
+                'Over %': over_percentage,
+                'Under %': under_percentage,
+                'Push %': push_percentage
             })
 
-    print(f"Condensed report for {league} has been saved as {report_filename}")
+    print(f"Condensed report for {league} has been saved as {report_path}")
