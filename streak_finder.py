@@ -15,6 +15,7 @@ import random
 import pytz
 import argparse
 import base64
+import mapped_pp_stats
 import pandas as pd
 
 # Define arguments
@@ -77,78 +78,6 @@ print("There are ",len(prop_lines),"to parse");
 
 prop_nums = len(prop_lines);
 val = 0;
-        
-def get_mapped_stat(stat_type):
-    stat_mapping = {
-        "Pass Completions": "PassingCompletions",
-        "Pass Yards": "PassingYards",
-        "Pass TDs": "PassingTouchdowns",
-        "Pass Attempts": "PassingAttempts",
-        "Fumbles Lost": "FumblesLost",
-        "INT": "Interceptions",
-        "Pass INTs": "Interceptions",
-        "Receptions": "Receptions",
-        "Receiving Yards": "ReceivingYards",
-        "Rec TDs": "ReceivingTouchdowns",
-        "Rec Targets": "ReceivingTargets",
-        "Rush Yards": "RushingYards",
-        "Rush Attempts": "RushingAttempts",
-        "Rush TDs": "RushingTouchdowns",
-        "Fantasy Score": "FantasyScore",
-        "Touchdowns": "Touchdowns",
-        "Pass+Rush+Rec TDs": "PassingTouchdowns,RushingTouchdowns,ReceivingTouchdowns",
-        "Rush+Rec TDs": "RushingTouchdowns,ReceivingTouchdowns",
-        "Pass+Rush Yds": "PassingYards,RushingYards",
-        "Rec+Rush Yds": "RushingYards,ReceivingYards",
-        "Rush+Rec Yds": "RushingYards,ReceivingYards",
-        "Sacks": "Sacks",
-        "Tackles+Ast": "TackleAssists,Tackles",
-        "FG Made": "FieldGoalsMade",
-        #"Kicking Points": "KickingPoints",
-        "Punts": "Punts",
-        "Pitcher Strikeouts": "PitcherStrikeouts", 
-        "Total Bases": "TotalBases",        
-        "Walks Allowed": "WalksAllowed", 
-        "Hits Allowed": "HitsAllowed", 
-        "Pitcher Fantasy Score": "PitcherFantasyScore", 
-        "Hits+Runs+RBIS": "HitsAndRunsAndRBIs",
-        "Pitching Outs": "PitchingOuts",        
-        "Pitcher Fantasy Score": "PitcherFantasyScore", 
-        "Hitter Fantasy Score": "HitterFantasyScore", 
-        "RBIs": "RBIs", 
-        "Runs": "Runs",         
-        "Hitter Strikeouts": "HitterStrikeouts",   
-        "Earned Runs Allowed": "EarnedRunsAllowed",
-        "Goalie Saves": "GoalieSaves",        
-        #"Time On Ice": "TimeOnIce", 
-        "Points": "Points", 
-        "Goals": "Goals", 
-        "Shots On Goal": "ShotsOnGoal", 
-        "SOG + BS": "ShotsOnGoal,BlockedShots",
-        "Assists": "Assists", 
-        "Faceoffs Won": "FaceoffsWon", 
-        "Hits": "Hits", 
-        "Points": "Points",  
-        "Rebounds": "Rebounds",        
-        "Offensive Rebounds": "OffensiveRebounds",   
-        "Defensive Rebounds": "DefensiveRebounds",   
-        "Assists": "Assists",       
-        "Turnovers": "Turnovers",  
-        "Steals": "Steals",      
-        "Blocked Shots": "BlockedShots",        
-        "FG Attempted": "FieldGoalsAttempted",  
-        "FG Made": "FieldGoalsMade",  
-        "FG Missed": "FieldGoalsMissed",  
-        "3-PT Made": "ThreePointersMade",    
-        "3-PT Attempted": "ThreePointersAttempted",         
-        "Free Throws Made": "FreeThrowsMade",  
-        "Pts+Rebs+Asts": "PtsRebsAsts",               
-        "Blks+Stls": "BlksStls",  
-        "Pts+Asts": "PtsAsts",   
-        "Pts+Rebs": "PtsRebs",   
-        "Rebs+Asts": "RebsAsts",  
-    }
-    return stat_mapping.get(stat_type, "")
     
 today = datetime.datetime.now()
 # Create a Central Time Zone (CT) object
@@ -199,7 +128,7 @@ def streak_check(line, mapped_stat, json_data, comparator):
 
 def find_streak(name, stat_type, line_score, json_data, last_five_url, comparator):
     line = float(line_score)
-    mapped_stat = get_mapped_stat(stat_type)
+    mapped_stat = mapped_pp_stats.get_mapped_stat(stat_type)
     
     if mapped_stat:
         return streak_check(line, mapped_stat, json_data, comparator)
@@ -216,7 +145,10 @@ for ind in prop_lines.index:
     league = prop_lines['league'][ind]
     name = (prop_lines['display_name'][ind])
     position = prop_lines['position'][ind]
+    team = prop_lines['team'][ind]  
+    opp = prop_lines['description'][ind]      
     market = prop_lines['market'][ind]
+    game_id = prop_lines['game_id'][ind]    
     player_id = prop_lines['player_id'][ind]
     combo = prop_lines['combo'][ind]
     is_promo = prop_lines['is_promo'][ind]
@@ -224,7 +156,7 @@ for ind in prop_lines.index:
     stat_type = prop_lines['stat_type'][ind]
     start_time = prop_lines['start_time'][ind]
     last_five_url = decoded_url+str(player_id)+"/last_five_games?league_name="+str(league)
-    print(player_id,league,name,position,market,combo,is_promo,line_score,stat_type,start_time,last_five_url);
+    print(player_id,league,team,opp,game_id,name,player_id,position,market,combo,is_promo,line_score,stat_type,start_time,last_five_url);
     
     if player_id not in prop_info:
     
@@ -279,11 +211,11 @@ for ind in prop_lines.index:
             if up_streak[0]:
                 avg_diff = float(up_streak[1]) - float(line_score)
                 percent_diff = 100.0 * ((avg_diff) / ((float(up_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Up",league,name,player_id,position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
+                streaks.append(["Over",league,team,opp,game_id,start_time,name,player_id,position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
             if down_streak[0]:
                 avg_diff = float(line_score) - float(down_streak[1])
                 percent_diff = 100.0 * ((avg_diff) / ((float(down_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Down",league,name,player_id,position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
+                streaks.append(["Under",league,team,opp,game_id,start_time,name,player_id,position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
         
 print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)
@@ -306,7 +238,7 @@ csv_filename = f"streak_data/pp_streaks_{timestamp}.csv"
 
 with open(csv_filename, 'w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(["Streak","League","Name","Id","Position","Prop","Line","Average","Raw Avg Distance","Percent Avg Distance","URL"])
+    writer.writerow(["Streak","League","Team","Next Opp","Next Event Id","Next Start Time","Name","Player Id","Position","Prop","Line","Average","Raw Avg Distance","Percent Avg Distance","Last Five URL"])
 
     for streak in streaks:
         print(streak,flush=True);
