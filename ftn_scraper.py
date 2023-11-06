@@ -19,6 +19,7 @@ def scrape_and_save_data(base_url, output_folder, sport):
     driver = webdriver.Chrome()
 
     decoded_url = base64.b64decode(base_url).decode()
+    print("Opening URL",decoded_url)
     # Open the initial page
     driver.get(decoded_url)
 

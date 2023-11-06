@@ -220,16 +220,12 @@ for ind in prop_lines.index:
 print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)
 
-print("No Handler Report",flush=True)
-
-for no_handle in no_handlers:
-    print(no_handle,flush=True);
-
-print("No Handler Report Dumped",flush=True)
 
 streaks.sort()
 
 print("Report",flush=True)
+
+sorted_streaks = sorted(streaks, key=lambda x: (x[0] == "Over", x))
 
 # Generate a timestamp
 timestamp = time.strftime("%Y-%m-%d-%H%M%S")
@@ -251,6 +247,14 @@ df = df.sort_values(by=['Streak','Percent Avg Distance'], ascending=False)
 df.to_csv(csv_filename)
 
 print("CSV Report Dumped",flush=True)
+
+
+print("No Handler Report",flush=True)
+
+for no_handle in no_handlers:
+    print(no_handle,flush=True);
+
+print("No Handler Report Dumped",flush=True)
 
 # Close the browser window
 driver.quit()
