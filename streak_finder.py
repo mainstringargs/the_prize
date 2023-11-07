@@ -67,7 +67,7 @@ decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-props = ["NFL","MLB","NHL","NBA","CFB"]
+props = ["NFL","MLB","NHL","NBA","CFB","CBB"]
 
 filter = prop_lines['league'].isin(props)
 prop_lines = prop_lines[filter]
@@ -107,7 +107,7 @@ def streak_check(line, mapped_stat, json_data, comparator):
         startTime = datetime.datetime.strptime(stat["GameStartTime"], date_format)
         
         if startTime < six_months_ago:
-            print("Game is too hold... ignoring")
+            print("Game is too old... ignoring")
             return (False, -987654321)
         
         for stat in stat_list:
