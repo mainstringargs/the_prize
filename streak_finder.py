@@ -221,11 +221,17 @@ print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)
 
 
-streaks.sort()
 
 print("Report",flush=True)
 
-sorted_streaks = sorted(streaks, key=lambda x: (x[0] == "Over", x))
+# Create a Pandas DataFrame from the streaks list
+streaks_df = pd.DataFrame(streaks, columns=["Streak", "League", "Team", "Next Opp", "Next Event Id", "Next Start Time", "Name", "Player Id", "Position", "Prop", "Line", "Average", "Raw Avg Distance", "Percent Avg Distance", "Last Five URL"])
+
+# Sort the DataFrame based on your criteria
+sorted_streaks_df = streaks_df.sort_values(by=['Streak', 'Percent Avg Distance'], ascending=[True, False])
+
+# Convert the sorted DataFrame back to a list
+sorted_streaks = sorted_streaks_df.values.tolist()
 
 # Generate a timestamp
 timestamp = time.strftime("%Y-%m-%d-%H%M%S")
@@ -242,7 +248,7 @@ with open(csv_filename, 'w', newline='') as file:
     
 df = pd.read_csv(csv_filename)
 
-df = df.sort_values(by=['Streak','Percent Avg Distance'], ascending=False)
+df = df.sort_values(by=['Streak','Percent Avg Distance'], ascending=[True, False])
 
 df.to_csv(csv_filename)
 
