@@ -25,17 +25,34 @@ if 'Hit' in merged_df.columns:
 
     # Calculate the overall percentage of Hit and Miss
     total_rows = len(merged_df)
-    hit_percent = (merged_df['Hit'] == 'Hit').sum() / total_rows * 100
-    miss_percent = (merged_df['Hit'] == 'Miss').sum() / total_rows * 100
+    hit_count = (merged_df['Hit'] == 'Hit').sum()
+    miss_count = (merged_df['Hit'] == 'Miss').sum()
+
+    # Check if there are any NaN values in the counts and fill them with 0
+    hit_percent = (hit_count / total_rows * 100) if not pd.isna(hit_count) else 0.0
+    miss_percent = (miss_count / total_rows * 100) if not pd.isna(miss_count) else 0.0
 
     # Calculate the percentage of Hit and Miss for each League
     league_percentages = merged_df.groupby('League')['Hit'].value_counts(normalize=True).unstack() * 100
     league_percentages = league_percentages.rename(columns={'Hit': 'Hit Percentage', 'Miss': 'Miss Percentage'})
 
-    # Add "Total Count" column
+    # Add "Total Count" column for overall
     league_totals = merged_df.groupby('League')['Hit'].count().reset_index()
     league_percentages = pd.merge(league_percentages, league_totals, on='League', how='left')
     league_percentages = league_percentages.rename(columns={'Hit': 'Total Count'})
+
+    # Calculate the percentage of Hit and Miss for each Prop within each League
+    prop_percentages = merged_df.groupby(['League', 'Prop'])['Hit'].value_counts(normalize=True).unstack() * 100
+    prop_percentages = prop_percentages.rename(columns={'Hit': 'Prop Hit Percentage', 'Miss': 'Prop Miss Percentage'})
+    prop_percentages = prop_percentages.fillna(0.0)
+
+    # Add "Total Count" column for per Prop
+    prop_totals = merged_df.groupby(['League', 'Prop'])['Hit'].count().reset_index()
+    prop_percentages = pd.merge(prop_percentages, prop_totals, on=['League', 'Prop'], how='left')
+    prop_percentages = prop_percentages.rename(columns={'Hit': 'Prop Total Count'})
+
+    # Sort the prop data within each league by "Prop Hit Percentage"
+    prop_percentages = prop_percentages.sort_values(by=['League', 'Prop Hit Percentage'], ascending=[True, False])
 
     # Add "Overall" row for overall percentages
     overall_row = pd.DataFrame({
@@ -45,14 +62,18 @@ if 'Hit' in merged_df.columns:
         'Total Count': [total_rows]
     })
 
-    # Concatenate the "Overall" row with the league-specific percentages
-    league_percentages = pd.concat([league_percentages.reset_index(), overall_row], ignore_index=True).sort_values(by=['League', 'Hit Percentage'])
+    # Interleave prop and overall data per league
+    interleaved_df = pd.concat([league_percentages.reset_index(), prop_percentages], ignore_index=True).sort_values(
+        by=['League', 'Hit Percentage'])
+        
+        
+    interleaved_df = pd.concat([overall_row, interleaved_df], ignore_index=True)     
 
     # Reorder columns with "League" first
-    columns_order = ['League', 'Hit Percentage', 'Miss Percentage', 'Total Count']
-    league_percentages = league_percentages[columns_order]
+    columns_order = ['League', 'Hit Percentage', 'Miss Percentage', 'Total Count', 'Prop', 'Prop Hit Percentage', 'Prop Miss Percentage', 'Prop Total Count']
+    interleaved_df = interleaved_df[columns_order]
 
     # Save the combined percentages to a CSV file with single-digit precision
-    league_percentages.to_csv('streak_data/combined_summary_report.csv', index=False, float_format='%.1f')
+    interleaved_df.to_csv('streak_data/combined_summary_report.csv', index=False, float_format='%.1f')
 else:
     print("The 'Hit' column does not exist in the dataframe.")

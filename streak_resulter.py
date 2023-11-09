@@ -22,7 +22,7 @@ driver = webdriver.Chrome()
 directory = 'streak_data'
 
 # List all files in the directory with the .csv extension
-csv_files = [f for f in os.listdir(directory) if f.endswith('.csv') and "_results" not in f]
+csv_files = [f for f in os.listdir(directory) if f.endswith('.csv') and "_results" not in f and "combined" not in f]
 
 # Find the latest CSV file in the directory
 latest_csv_file = max(csv_files, key=lambda f: os.path.getctime(os.path.join(directory, f)))
@@ -217,3 +217,6 @@ print(f'Percentage of Hit == False: {hit_false_percentage:.2f}%')
 new_file_name = latest_csv_file.replace('.csv', '_results.csv')
 new_file_path = os.path.join(directory, new_file_name)
 result_df.to_csv(new_file_path, index=False)
+
+import subprocess
+subprocess.run(["python", "streak_combined_resulter.py"])
