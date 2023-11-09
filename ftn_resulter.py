@@ -266,7 +266,7 @@ def find_player_id(league,team,name):
     if name in player_ids[league][team]:
         return player_ids[league][team][name]    
 
-    matching_row = pp_data.loc[pp_data['display_name'] == name]
+    matching_row = pp_data.loc[pp_data['display_name'] == name.strip()]
 
     if not matching_row.empty:
         # Print the values from the first matching row

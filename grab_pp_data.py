@@ -38,6 +38,7 @@ schedule.every().day.at("08:00").do(run_pp_results_grabber_json)
 schedule.every().day.at("09:00").do(run_streak_resulter)
 schedule.every().day.at("10:45").do(run_ftn_scraper)
 schedule.every().day.at("12:00").do(run_streak_driver)
+schedule.every().day.at("14:00").do(run_get_props_json)
 schedule.every().day.at("09:45").do(run_ftn_resulter_nba)
 schedule.every().day.at("23:00").do(run_get_props_json)
 
