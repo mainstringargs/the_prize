@@ -1,6 +1,7 @@
 import os
 import csv
 from datetime import datetime
+import sheets
 
 # Directory containing the CSV files
 directory = "results"
@@ -57,8 +58,11 @@ for league, prop_data in league_data.items():
         over_percentage = round((data['Over'] / total) * 100, 1) if total > 0 else 0.0
         data['Over %'] = over_percentage
 
+reversed_keys = list(reversed(league_data.keys()))
+
 # Generate and save a condensed report for each league, with all columns and percentages
-for league, prop_data in league_data.items():
+for league in reversed_keys:
+    prop_data = league_data[league]
     report_filename = f"{league}_condensed_report_{current_date}.csv"
     report_path = os.path.join(output_directory, report_filename)
 
@@ -90,3 +94,4 @@ for league, prop_data in league_data.items():
             })
 
     print(f"Condensed report for {league} has been saved as {report_path}")
+    sheets.write_to_spreadsheet(report_path,"PP Results",league+" Combined",0)

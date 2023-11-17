@@ -24,7 +24,7 @@ def get_mapped_stat(stat_type):
         "Sacks": "Sacks",
         "Tackles+Ast": "TackleAssists,Tackles",
         "FG Made": "FieldGoalsMade",
-        #"Kicking Points": "KickingPoints",
+        "Kicking Points": "KickingPoints",
         "Punts": "Punts",
         "Pitcher Strikeouts": "PitcherStrikeouts", 
         "Total Bases": "TotalBases",        

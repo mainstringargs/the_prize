@@ -16,7 +16,7 @@ import random
 import pytz
 import argparse
 import mapped_pp_stats
-
+import sheets
 
 # Define arguments
 parser = argparse.ArgumentParser(description="Script with command-line arguments")
@@ -186,6 +186,8 @@ print("END NO HANDLER REPORT")
 
 
 processed = pd.read_csv('processing/prop_report_'+formatted_date+'.csv', encoding='unicode_escape')
+
+sheets.write_to_spreadsheet('processing/prop_report_'+formatted_date+'.csv',"PP Results",formatted_date,6)
 
 #print(processed)
 

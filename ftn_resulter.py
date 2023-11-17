@@ -225,7 +225,7 @@ player_ids = {}
 # Example usage:
 directory_path = 'pp_data'
 target_date = datetime.date.today() - datetime.timedelta(days=1)  # Yesterday
-json_info = load_middle_json_file_from_date(directory_path, target_date)
+json_info = load_oldest_json_file_from_date(directory_path, target_date)
 
 players = {}
 for d in json_info["included"]:

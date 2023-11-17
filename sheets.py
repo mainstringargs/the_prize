@@ -1,37 +1,51 @@
 import argparse
 import pygsheets
 import pandas as pd
+import chardet
 
 # authorization
 gc = pygsheets.authorize(service_file='creds.json')
 
 def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, index=1, overwrite=True):
-    print("file_name",file_name,"spreadsheet_name",spreadsheet_name,"sheet_name",sheet_name,"index",index)
-    data_frame = pd.read_csv(file_name) 
-    if 'Percentage of Hit == True' in data_frame and 'Percentage of Hit == False' in data_frame:
-        data_frame = data_frame.drop(columns=['Percentage of Hit == True', 'Percentage of Hit == False'])
-        
-    if 'Hit' in data_frame:
-        first_column = data_frame.pop('Hit') 
-        data_frame.insert(0, 'Hit', first_column)
-        
-    data_frame = data_frame.dropna(how='all')
-    sh = gc.open(spreadsheet_name)
-    
-    if overwrite:
-        # Check if the sheet with the same name already exists
-        try:
-            existing_sheet = sh.worksheet_by_title(sheet_name)
-            
-            if existing_sheet:
-                # Delete the existing sheet
-                sh.del_worksheet(existing_sheet)
-        except:
-            print("Failed to overwrite, may not exist")
-    
-    new_sheet = sh.add_worksheet(sheet_name, index=index)
-    new_sheet.set_dataframe(data_frame, (1, 1), nan="")
-    return sh, new_sheet
+    print("file_name",file_name,"spreadsheet_name",spreadsheet_name,"sheet_name",sheet_name,"index",index, flush=True)
+
+    try:
+        # Detect the encoding of the file
+        with open(file_name, 'rb') as f:
+            result = chardet.detect(f.read())
+
+        # Print the detected encoding
+        print("Detected encoding:", result['encoding'])
+
+        # Read the CSV file with the detected encoding
+        data_frame = pd.read_csv(file_name, encoding=result['encoding'])
+        if 'Percentage of Hit == True' in data_frame and 'Percentage of Hit == False' in data_frame:
+            data_frame = data_frame.drop(columns=['Percentage of Hit == True', 'Percentage of Hit == False'])
+
+        if 'Hit' in data_frame:
+            first_column = data_frame.pop('Hit')
+            data_frame.insert(0, 'Hit', first_column)
+
+        data_frame = data_frame.dropna(how='all')
+        sh = gc.open(spreadsheet_name)
+
+        if overwrite:
+            # Check if the sheet with the same name already exists
+            try:
+                existing_sheet = sh.worksheet_by_title(sheet_name)
+
+                if existing_sheet:
+                    # Delete the existing sheet
+                    sh.del_worksheet(existing_sheet)
+            except Exception as e:
+                print("Failed to overwrite, may not exist:", e)
+
+        new_sheet = sh.add_worksheet(sheet_name, index=index)
+        new_sheet.set_dataframe(data_frame, (1, 1), nan="")
+        return sh, new_sheet
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 def main():
     parser = argparse.ArgumentParser(description='Write CSV file to Google Spreadsheet')

@@ -15,6 +15,7 @@ import pytz
 import argparse
 import json
 import mapped_pp_stats
+import sheets
 
 driver = webdriver.Chrome()
 
@@ -205,6 +206,12 @@ df_false = df_false.sort_values(by='Percent Avg Distance', ascending=False)
 # Combine the sorted DataFrames back
 sorted_df = pd.concat([df_true, df_false])
 
+sorted_df = sorted_df = df.pop('Hit') 
+  
+# insert column using insert(position,column_name, 
+# first_column) function 
+sorted_df = sorted_df.insert(0, 'Hit', first_column) 
+
 # Include the percentages in the CSV as the first two rows
 percentages_df = pd.DataFrame({'Percentage of Hit == True': [hit_true_percentage], 'Percentage of Hit == False': [hit_false_percentage]})
 result_df = pd.concat([percentages_df, sorted_df], ignore_index=True)
@@ -217,6 +224,8 @@ print(f'Percentage of Hit == False: {hit_false_percentage:.2f}%')
 new_file_name = latest_csv_file.replace('.csv', '_results.csv')
 new_file_path = os.path.join(directory, new_file_name)
 result_df.to_csv(new_file_path, index=False)
+
+sheets.write_to_spreadsheet(new_file_path,"Last Five Streaker",new_file_name.replace("pp_streaks_","").replace('_results.csv',''),1)
 
 import subprocess
 subprocess.run(["python", "streak_combined_resulter.py"])
