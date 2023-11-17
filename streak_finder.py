@@ -67,7 +67,7 @@ decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-props = ["NFL","MLB","NHL","NBA","CFB","CBB","NBA1H","NFL1H"]
+props = ["NFL","MLB","NHL","NBA","CFB","CBB","NBA1H","NFL1H","CFB1H","CBB1H","CBB2H"]
 
 filter = prop_lines['league'].isin(props)
 prop_lines = prop_lines[filter]

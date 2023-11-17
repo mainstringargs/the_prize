@@ -94,4 +94,4 @@ for league in reversed_keys:
             })
 
     print(f"Condensed report for {league} has been saved as {report_path}")
-    sheets.write_to_spreadsheet(report_path,"PP Results",league+" Combined",0)
+    sheets.write_to_spreadsheet(report_path,"PP Results",league+" Combined",add_column_name="Event Date",add_column_data=current_date,index=0,overwrite=True)    

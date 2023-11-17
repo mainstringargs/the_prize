@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import sheets
+import datetime 
 
 # Set the directory path
 directory_path = "streak_data"
@@ -77,7 +78,9 @@ if 'Hit' in merged_df.columns:
     # Save the combined percentages to a CSV file with single-digit precision
     interleaved_df.to_csv('streak_data/combined_summary_report.csv', index=False, float_format='%.1f')
     
+    today = datetime.datetime.now()
+    formatted_date = today.strftime("%Y-%m-%d")
     
-    sheets.write_to_spreadsheet('streak_data/combined_summary_report.csv',"Last Five Streaker",'Combined',0)    
+    sheets.write_to_spreadsheet('streak_data/combined_summary_report.csv',"Last Five Streaker",'Combined',add_column_name="Event Date",add_column_data=formatted_date,index=0,overwrite=True,append=False)
 else:
     print("The 'Hit' column does not exist in the dataframe.")

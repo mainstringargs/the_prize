@@ -225,7 +225,7 @@ new_file_name = latest_csv_file.replace('.csv', '_results.csv')
 new_file_path = os.path.join(directory, new_file_name)
 result_df.to_csv(new_file_path, index=False)
 
-sheets.write_to_spreadsheet(new_file_path,"Last Five Streaker",new_file_name.replace("pp_streaks_","").replace('_results.csv',''),1)
-
+sheets.write_to_spreadsheet(new_file_path,"Last Five Streaker",'Individual Streaks',add_column_name="Event Date",add_column_data=new_file_name.replace("pp_streaks_","").replace("_results.csv",""),index=0,overwrite=False,append=True)
+    
 import subprocess
 subprocess.run(["python", "streak_combined_resulter.py"])

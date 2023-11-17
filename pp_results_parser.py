@@ -187,7 +187,9 @@ print("END NO HANDLER REPORT")
 
 processed = pd.read_csv('processing/prop_report_'+formatted_date+'.csv', encoding='unicode_escape')
 
-sheets.write_to_spreadsheet('processing/prop_report_'+formatted_date+'.csv',"PP Results",formatted_date,6)
+#sheets.write_to_spreadsheet('processing/prop_report_'+formatted_date+'.csv',"PP Results",formatted_date,6)
+
+sheets.write_to_spreadsheet('processing/prop_report_'+formatted_date+'.csv',"PP Results",'Individual Props',add_column_name="Event Date",add_column_data=formatted_date,index=0,overwrite=False,append=True)
 
 #print(processed)
 
