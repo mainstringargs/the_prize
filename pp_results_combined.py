@@ -55,7 +55,7 @@ for filename in os.listdir(directory):
 for league, prop_data in league_data.items():
     for prop, data in prop_data.items():
         total = data['Over'] + data['Under'] + data['Push']
-        over_percentage = round((data['Over'] / total) * 100, 1) if total > 0 else 0.0
+        over_percentage = round((data['Over'] / total) , 3) if total > 0 else 0.0
         data['Over %'] = over_percentage
 
 reversed_keys = list(reversed(league_data.keys()))
@@ -80,8 +80,8 @@ for league in reversed_keys:
         for prop, data in sorted_data:
             total = data['Over'] + data['Under'] + data['Push']
             over_percentage = data['Over %']  # Use the precalculated "Over %" value
-            under_percentage = round((data['Under'] / total) * 100, 1) if total > 0 else 0.0
-            push_percentage = round((data['Push'] / total) * 100, 1) if total > 0 else 0.0
+            under_percentage = round((data['Under'] / total) , 3) if total > 0 else 0.0
+            push_percentage = round((data['Push'] / total) , 3) if total > 0 else 0.0
             writer.writerow({
                 'prop': prop,
                 'Over': data['Over'],
@@ -92,6 +92,9 @@ for league in reversed_keys:
                 'Under %': under_percentage,
                 'Push %': push_percentage
             })
+            
+    today = datetime.now()
+    formatted_date = today.strftime("%Y-%m-%d %H:%M")        
 
     print(f"Condensed report for {league} has been saved as {report_path}")
-    sheets.write_to_spreadsheet(report_path,"PP Results",league+" Combined",add_column_name="Event Date",add_column_data=current_date,index=0,overwrite=True)    
+    sheets.write_to_spreadsheet(report_path,"PP Results",league+" Combined",add_column_name="Updated",add_column_data=formatted_date,index=0,overwrite=True)    

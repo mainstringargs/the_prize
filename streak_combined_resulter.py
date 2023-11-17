@@ -31,11 +31,11 @@ if 'Hit' in merged_df.columns:
     miss_count = (merged_df['Hit'] == 'Miss').sum()
 
     # Check if there are any NaN values in the counts and fill them with 0
-    hit_percent = (hit_count / total_rows * 100) if not pd.isna(hit_count) else 0.0
-    miss_percent = (miss_count / total_rows * 100) if not pd.isna(miss_count) else 0.0
+    hit_percent = (hit_count / total_rows  ) if not pd.isna(hit_count) else 0.0
+    miss_percent = (miss_count / total_rows ) if not pd.isna(miss_count) else 0.0
 
     # Calculate the percentage of Hit and Miss for each League
-    league_percentages = merged_df.groupby('League')['Hit'].value_counts(normalize=True).unstack() * 100
+    league_percentages = merged_df.groupby('League')['Hit'].value_counts(normalize=True).unstack() 
     league_percentages = league_percentages.rename(columns={'Hit': 'Hit Percentage', 'Miss': 'Miss Percentage'})
 
     # Add "Total Count" column for overall
@@ -44,7 +44,7 @@ if 'Hit' in merged_df.columns:
     league_percentages = league_percentages.rename(columns={'Hit': 'Total Count'})
 
     # Calculate the percentage of Hit and Miss for each Prop within each League
-    prop_percentages = merged_df.groupby(['League', 'Prop'])['Hit'].value_counts(normalize=True).unstack() * 100
+    prop_percentages = merged_df.groupby(['League', 'Prop'])['Hit'].value_counts(normalize=True).unstack() 
     prop_percentages = prop_percentages.rename(columns={'Hit': 'Prop Hit Percentage', 'Miss': 'Prop Miss Percentage'})
     prop_percentages = prop_percentages.fillna(0.0)
 
@@ -76,11 +76,11 @@ if 'Hit' in merged_df.columns:
     interleaved_df = interleaved_df[columns_order]
 
     # Save the combined percentages to a CSV file with single-digit precision
-    interleaved_df.to_csv('streak_data/combined_summary_report.csv', index=False, float_format='%.1f')
+    interleaved_df.to_csv('streak_data/combined_summary_report.csv', index=False, float_format='%.3f')
     
     today = datetime.datetime.now()
-    formatted_date = today.strftime("%Y-%m-%d")
+    formatted_date = today.strftime("%Y-%m-%d %H:%M")      
     
-    sheets.write_to_spreadsheet('streak_data/combined_summary_report.csv',"Last Five Streaker",'Combined',add_column_name="Event Date",add_column_data=formatted_date,index=0,overwrite=True,append=False)
+    sheets.write_to_spreadsheet('streak_data/combined_summary_report.csv',"Last Five Streaker",'Combined',add_column_name="Updated",add_column_data=formatted_date,index=0,overwrite=True,append=False)
 else:
     print("The 'Hit' column does not exist in the dataframe.")
