@@ -38,7 +38,8 @@ def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_nam
         try:
             # Check if the sheet with the same name already exists
             existing_sheet = sh.worksheet_by_title(sheet_name)
-            print(sheet_name,"rows",existing_sheet.rows,flush=True)
+            print(sheet_name, "rows", existing_sheet.rows, flush=True)
+
             if append:
                 # Append data to the existing sheet
                 existing_data_frame = existing_sheet.get_as_df()
@@ -52,11 +53,15 @@ def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_nam
                 print("Appended data to existing sheet:", sheet_name)
                 return sh, existing_sheet
 
-
-
             elif overwrite:
-                # Delete the existing sheet
-                sh.del_worksheet(existing_sheet)
+                # Keep existing headers and formatting but replace all existing data
+                # Clear the data range excluding headers
+                existing_sheet.clear(start=(2, 1), end=(existing_sheet.rows + 1, existing_sheet.cols))
+                # Set the new data
+                existing_sheet.set_dataframe(data_frame, start=(2, 1), nan="", extend=True, copy_index=False, copy_head=False)
+                print("Overwritten data in existing sheet:", sheet_name)
+                return sh, existing_sheet
+
             else:
                 raise ValueError("Sheet with the same name already exists. Use --overwrite or --append.")
 
