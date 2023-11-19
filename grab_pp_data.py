@@ -4,32 +4,25 @@ import subprocess
 import datetime 
 
 def run_get_props_json():
-    # Run the "get_props_json.py" script using subprocess
-    subprocess.run(["python", "get_props_json.py"])
+    subprocess.run(["python", "pp_get_props_json.py"])
 
 def run_pp_results_grabber_json():
-    # Run the "get_props_json.py" script using subprocess
     subprocess.run(["python", "pp_results_report.py"])
     
 def run_streak_driver():
-    # Run the "get_props_json.py" script using subprocess
     subprocess.run(["python", "streak_driver.py"])    
 
     
 def run_ftn_scraper():
-    # Run the "get_props_json.py" script using subprocess
     subprocess.run(["python", "ftn_scraper.py"])    
 
 def run_streak_resulter():
-    # Run the "get_props_json.py" script using subprocess
     subprocess.run(["python", "streak_resulter.py"])    
 
 def run_ftn_resulter_nfl():
-    # Run the "get_props_json.py" script using subprocess
     subprocess.run(["python", "ftn_resulter.py","--league","NFL"])    
     
 def run_ftn_resulter_nba():
-    # Run the "get_props_json.py" script using subprocess
     subprocess.run(["python", "ftn_resulter.py","--league","NBA"])    
 
 # Schedule the script to run at 7:00 am, 12:55 pm, and 11:00 pm
