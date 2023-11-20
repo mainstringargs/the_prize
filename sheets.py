@@ -22,6 +22,8 @@ def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_nam
         data_frame = pd.read_csv(file_name, encoding=result['encoding'])
         if 'Percentage of Hit == True' in data_frame and 'Percentage of Hit == False' in data_frame:
             data_frame = data_frame.drop(columns=['Percentage of Hit == True', 'Percentage of Hit == False'])
+        if 'Unnamed: 0' in data_frame:
+            data_frame = data_frame.drop(columns=['Unnamed: 0'])
         data_frame = data_frame.dropna(how='all')
         
         if 'Hit' in data_frame:

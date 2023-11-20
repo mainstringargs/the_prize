@@ -11,6 +11,7 @@ import csv
 import fnmatch
 import datetime
 import time
+import sheets
 import random
 import pytz
 import argparse
@@ -210,12 +211,12 @@ for ind in prop_lines.index:
             
             if up_streak[0]:
                 avg_diff = float(up_streak[1]) - float(line_score)
-                percent_diff = 100.0 * ((avg_diff) / ((float(up_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Over",league,team,opp,game_id,start_time,name,player_id,position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
+                percent_diff = ((avg_diff) / ((float(up_streak[1]) + float(line_score))/2.0))
+                streaks.append(["Over",league,team,opp,game_id,start_time,name,player_id,position,stat_type,(line_score),round(float(up_streak[1]),2),round(avg_diff,1),round(percent_diff,2),last_five_url])
             if down_streak[0]:
                 avg_diff = float(line_score) - float(down_streak[1])
-                percent_diff = 100.0 * ((avg_diff) / ((float(down_streak[1]) + float(line_score))/2.0))
-                streaks.append(["Under",league,team,opp,game_id,start_time,name,player_id,position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,1),last_five_url])
+                percent_diff = ((avg_diff) / ((float(down_streak[1]) + float(line_score))/2.0))
+                streaks.append(["Under",league,team,opp,game_id,start_time,name,player_id,position,stat_type,(line_score),round(float(down_streak[1]),2),round(avg_diff,1),round(percent_diff,2),last_five_url])
         
 print("Now we have ",len(prop_info),flush=True)
 #print("Dump ",(prop_info),flush=True)
@@ -250,10 +251,14 @@ df = pd.read_csv(csv_filename)
 
 df = df.sort_values(by=['Streak','Percent Avg Distance'], ascending=[True, False])
 
+#df = df.drop(columns=['Unnamed: 0'], axis=1)
+
 df.to_csv(csv_filename)
 
 print("CSV Report Dumped",flush=True)
-
+today = datetime.datetime.now()
+formatted_date = today.strftime("%Y-%m-%d %H:%M")      
+sheets.write_to_spreadsheet(csv_filename,"Last Five Streaker","Latest Streaks",add_column_name="Updated",add_column_data=formatted_date,index=0,overwrite=True)    
 
 print("No Handler Report",flush=True)
 
