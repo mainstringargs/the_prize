@@ -23,7 +23,7 @@ current_week = str(datetime.date.today().isocalendar()[1])
 
 # Define script paths
 
-subprocess.run(["python", "get_props_json.py"])
+subprocess.run(["python", "pp_get_props_json.py"])
 subprocess.run(["python", "props.py", "--year", current_year, "--week", current_week, "--pp_file", get_newest_file('pp_data')])
 subprocess.run(["python", "streak_finder.py", "--year", current_year, "--week", current_week])
 
