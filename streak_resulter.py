@@ -206,11 +206,11 @@ df_false = df_false.sort_values(by='Percent Avg Distance', ascending=False)
 # Combine the sorted DataFrames back
 sorted_df = pd.concat([df_true, df_false])
 
-sorted_df = sorted_df = df.pop('Hit') 
+#sorted_df = df.pop('Hit') 
   
 # insert column using insert(position,column_name, 
 # first_column) function 
-sorted_df = sorted_df.insert(0, 'Hit', first_column) 
+#sorted_df = sorted_df.insert(0, 'Hit', first_column) 
 
 # Include the percentages in the CSV as the first two rows
 percentages_df = pd.DataFrame({'Percentage of Hit == True': [hit_true_percentage], 'Percentage of Hit == False': [hit_false_percentage]})

@@ -55,7 +55,7 @@ def checker():
     if today in [0, 1, 4] and hour == 10 and minute == 1 and second<1.0:
         run_ftn_resulter_nfl()
 
-    if today in [5, 6] and hour == 10 and minute == 1 and second<1.0:
+    if today in [5, 6] and hour == 9 and minute == 30 and second<1.0:
         run_get_props_json()
     
 while True:
