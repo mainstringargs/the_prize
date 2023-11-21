@@ -7,9 +7,12 @@ import json
 import time
 import os
 import base64
+from selenium.webdriver.chrome.options import Options
 
-driver = webdriver.Chrome()
+chrome_options = Options()
+#chrome_options.add_argument("--headless")
 
+driver = webdriver.Chrome(options=chrome_options)
 # Specify the directory path you want to create
 directory_path = 'pp_data'
 

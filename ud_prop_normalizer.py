@@ -67,7 +67,12 @@ url = "aHR0cHM6Ly9zdGF0cy51bmRlcmRvZ2ZhbnRhc3kuY29tL3YxL3RlYW1z="
 decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
-driver = webdriver.Chrome()
+from selenium.webdriver.chrome.options import Options
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+
+driver = webdriver.Chrome(options=chrome_options)
 
 driver.get(decoded_url)
 
@@ -138,11 +143,11 @@ for val in json_info["solo_games"]:
 csv_file_name = f"normalized_props/ud_props_{formatted_date}.csv"
 
 # Define the CSV headers
-csv_headers = ["Title", "Prop_Name", "Prop_Display_Name", "First_Name", "Last_Name", "Sport", "Stat_Value",
-               "Scheduled_Time", "Match_Title", "Team_Name", "Team_Abbr", "Boosted", "Boosted_Multiplier", "Boosted_Choice"]
+csv_headers = ["Title", "Prop Name", "Prop Display Name", "First Name", "Last Name", "Full Name", "Sport", "Stat Value",
+               "Scheduled Time", "Match Title", "Team Name", "Team Abbr", "Boosted", "Boosted Multiplier", "Boosted Choice"]
 
 
-with open(csv_file_name, 'w', newline='') as csvfile:
+with open(csv_file_name, 'w', newline='', encoding='utf-8') as csvfile:
     # Create a CSV writer object
     csvwriter = csv.writer(csvfile)
 
@@ -165,6 +170,14 @@ with open(csv_file_name, 'w', newline='') as csvfile:
         player = ud_players[player_id]
         first_name = player["first_name"]
         last_name = player["last_name"]
+        full_name = ""
+        if first_name and last_name:
+            full_name = first_name+ " "+last_name
+        elif first_name:
+            full_name = first_name
+        elif last_name:
+            full_name = last_name            
+        
         sport = player["sport_id"]
         team_name = ""
         team_abbr = ""
@@ -196,10 +209,13 @@ with open(csv_file_name, 'w', newline='') as csvfile:
             scheduled_time = game['scheduled_at']
             title = game['title']  
         
-        print(title, prop_name, prop_display_name, first_name, last_name, sport, stat_value, scheduled_time, title, team_name, team_abbr, boosted, boosted_multiplier, boosted_choice)
+
         
-        csvwriter.writerow([title, prop_name, prop_display_name, first_name, last_name, sport, stat_value,
+        csvwriter.writerow([title, prop_name, prop_display_name, first_name, last_name, full_name, sport, stat_value,
                             scheduled_time, title, team_name, team_abbr, boosted, boosted_multiplier, boosted_choice])
 
 # Print a message indicating the CSV file has been created
 print(f"CSV file '{csv_file_name}' created.")
+
+print("Cleaning up",newest_file)
+os.remove(newest_file)

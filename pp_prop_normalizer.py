@@ -93,3 +93,6 @@ df.to_csv(csv_file_name)
 
 # Print a message indicating the CSV file has been created
 print(f"CSV file '{csv_file_name}' created.")
+
+print("Cleaning up",newest_file)
+os.remove(newest_file)
