@@ -158,12 +158,12 @@ for name in pp_properties_dict:
             sport = pp_props_for_player[pp_prop]['league']
             team = pp_props_for_player[pp_prop]['team']
             
-                        
-            pp_board_time = datetime.datetime.fromisoformat(pp_props_for_player[pp_prop]['board_time'])
             central_tz = pytz.timezone('America/Chicago')  # Change 'America/Chicago' to the appropriate time zone
+            pp_board_time = datetime.datetime.fromisoformat(pp_props_for_player[pp_prop]['board_time'])
             pp_board_time = pp_board_time.astimezone(central_tz)
+            
             pp_start_time = datetime.datetime.fromisoformat(pp_props_for_player[pp_prop]['start_time'])            
-            pp_board_time = pp_board_time.astimezone(central_tz)
+            pp_start_time = pp_start_time.astimezone(central_tz)
             
             if sport in pp_to_ud_props and pp_prop in pp_to_ud_props[sport]:
                 ud_prop = pp_to_ud_props[sport][pp_prop]
