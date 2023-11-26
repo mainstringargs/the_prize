@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import datetime 
+import sheets
 
 # Set the directory path
 directory_path = "streak_data"
@@ -99,6 +100,6 @@ if 'Hit' in merged_df.columns:
     today = datetime.datetime.now()
     formatted_date = today.strftime("%Y-%m-%d %H:%M")      
     
-    #sheets.write_to_spreadsheet('streak_data/combined_summary_report.csv',"Last Five Streaker",'Combined',add_column_name="Updated",add_column_data=formatted_date,index=0,overwrite=True,append=False)
+    sheets.write_to_spreadsheet('streak_data/combined_summary_report.csv',"Last Five Streaker",'Combined',add_column_name="Updated",add_column_data=formatted_date,index=0,overwrite=True,append=False)
 else:
     print("The 'Hit' column does not exist in the dataframe.")
