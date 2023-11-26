@@ -74,6 +74,43 @@ if 'Hit' in merged_df.columns:
     # Sort the prop data within each league by "Prop Hit Percentage"
     prop_percentages = prop_percentages.sort_values(by=['League', 'Prop Hit Percentage'], ascending=[True, False])
 
+    
+    # Calculate the overall percentage of Hit, Miss, and Push
+    total_rows = float(merged_df['Streak'].count())
+
+    over_hit_count = float(((merged_df['Streak'] == 'Over') & (merged_df['Prop Result'] == 'Over')).sum())
+    under_hit_count = float(((merged_df['Streak'] == 'Under') & (merged_df['Prop Result'] == 'Under')).sum())
+
+    over_total_count = float((merged_df['Streak'] == 'Over').sum())
+    under_total_count = float((merged_df['Streak'] == 'Under').sum())
+
+    over_hit_percent = (over_hit_count / over_total_count) if over_total_count != 0 else 0.0
+    under_hit_percent = (under_hit_count / under_total_count) if under_total_count != 0 else 0.0
+    
+    over_miss_count = float(((merged_df['Streak'] == 'Over') & (merged_df['Prop Result'] == 'Under')).sum())
+    under_miss_count = float(((merged_df['Streak'] == 'Under') & (merged_df['Prop Result'] == 'Over')).sum())
+
+    over_miss_percent = (over_miss_count / over_total_count) if over_total_count != 0 else 0.0
+    under_miss_percent = (under_miss_count / under_total_count) if under_total_count != 0 else 0.0
+
+    over_push_count = float(((merged_df['Streak'] == 'Over') & (merged_df['Prop Result'] == 'Push')).sum())
+    under_push_count = float(((merged_df['Streak'] == 'Under') & (merged_df['Prop Result'] == 'Push')).sum())
+
+    over_push_percent = (over_push_count / over_total_count) if over_total_count != 0 else 0.0
+    under_push_percent = (under_push_count / under_total_count) if under_total_count != 0 else 0.0
+
+    print('Over Hit Percentage:', over_hit_percent)
+    print('Under Hit Percentage:', under_hit_percent)
+    
+    print('Over Miss Percentage:', over_miss_percent)
+    print('Under Miss Percentage:', under_miss_percent)
+    
+    print('Over Push Percentage:', over_push_percent)
+    print('Under Push Percentage:', under_push_percent)
+
+    print('Over Total Percentage:', (over_hit_percent+over_miss_percent+over_push_percent))
+    print('Under Total Percentage:', (under_hit_percent+under_miss_percent+under_push_percent))
+
     # Add "Overall" row for overall percentages
     overall_row = pd.DataFrame({
         'League': ['Overall'],
@@ -82,12 +119,30 @@ if 'Hit' in merged_df.columns:
         'Push Percentage': [round(push_percent, 2)],
         'Total Count': [total_rows]
     })
+    
+    # Add "Overall" row for overall percentages
+    overall_row_over = pd.DataFrame({
+        'League': ['Overall_Over'],
+        'Hit Percentage': [round(over_hit_percent, 2)],
+        'Miss Percentage': [round(over_miss_percent, 2)],
+        'Push Percentage': [round(over_push_percent, 2)],
+        'Total Count': [over_total_count]
+    })    
+
+    # Add "Overall" row for overall percentages
+    overall_row_under = pd.DataFrame({
+        'League': ['Overall_Under'],
+        'Hit Percentage': [round(under_hit_percent, 2)],
+        'Miss Percentage': [round(under_miss_percent, 2)],
+        'Push Percentage': [round(under_push_percent, 2)],
+        'Total Count': [under_total_count]
+    })    
 
     # Interleave prop and overall data per league
     interleaved_df = pd.concat([league_percentages.reset_index(), prop_percentages], ignore_index=True).sort_values(
         by=['League', 'Hit Percentage'])
         
-    interleaved_df = pd.concat([overall_row, interleaved_df], ignore_index=True)     
+    interleaved_df = pd.concat([overall_row, overall_row_over, overall_row_under, interleaved_df], ignore_index=True)     
 
     # Reorder columns with "League" first
     columns_order = ['League', 'Hit Percentage', 'Miss Percentage', 'Push Percentage', 'Total Count', 'Prop', 'Prop Hit Percentage', 'Prop Miss Percentage', 'Prop Push Percentage', 'Prop Total Count']
