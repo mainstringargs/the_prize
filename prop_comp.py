@@ -190,8 +190,10 @@ for name in pp_properties_dict:
                         diff_value = round(ud_val - pp_val, 2)
                         
                         lower = "underdog"
-                        
-                        if ud_val > pp_val:
+
+                        if ud_val > pp_val and ud_info['Boosted']=='True'
+                            lower = "prizepicks_since_ud_boosted"
+                        elif ud_val > pp_val:
                             lower = "prizepicks"
                         
                         prop_diffs[sport][name][pp_prop] = {"team": team, 
