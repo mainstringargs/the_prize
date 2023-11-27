@@ -30,9 +30,9 @@ def prop_comp_driver():
 
 # Schedule the script to run at 7:00 am, 12:55 pm, and 11:00 pm
 #schedule.every().day.at("07:00").do(run_get_props_json)
-schedule.every().day.at("08:30").do(run_streak_driver)
-schedule.every().day.at("14:00").do(run_pp_results_grabber_json)
-schedule.every().day.at("14:15").do(run_streak_resulter)
+schedule.every().day.at("09:30").do(run_streak_driver)
+schedule.every().day.at("07:15").do(run_pp_results_grabber_json)
+schedule.every().day.at("07:30").do(run_streak_resulter)
 schedule.every().day.at("10:30").do(run_ftn_scraper)
 schedule.every().day.at("11:00").do(run_streak_driver)
 schedule.every().day.at("14:30").do(run_streak_driver)
