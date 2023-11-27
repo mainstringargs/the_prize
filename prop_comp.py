@@ -191,7 +191,7 @@ for name in pp_properties_dict:
                         
                         lower = "underdog"
 
-                        if ud_val > pp_val and ud_info['Boosted']=='True'
+                        if ud_val > pp_val and ud_info['Boosted']:
                             lower = "prizepicks_since_ud_boosted"
                         elif ud_val > pp_val:
                             lower = "prizepicks"

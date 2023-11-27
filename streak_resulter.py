@@ -16,22 +16,47 @@ import argparse
 import json
 import mapped_pp_stats
 import sheets
+from datetime import datetime, timedelta
 
+def find_oldest_csv_from_yesterday(directory_path):
+    # Get yesterday's date
+    yesterday = datetime.now() - timedelta(days=1)
+
+    # List all files in the directory
+    files = [f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))]
+
+    # Filter files with .csv extension
+    csv_files = [f for f in files if f.lower().endswith('.csv') and "combined" not in f.lower()]
+
+    if not csv_files:
+        return None  # No CSV files found in the directory
+
+    # Get modification times for CSV files
+    file_times = [(f, os.path.getmtime(os.path.join(directory_path, f))) for f in csv_files]
+
+    # Filter files modified on yesterday's date
+    yesterday_files = [(f, t) for f, t in file_times if datetime.fromtimestamp(t).date() == yesterday.date()]
+
+    if not yesterday_files:
+        return None  # No CSV files modified yesterday
+
+    # Find the oldest file from yesterday
+    oldest_file = min(yesterday_files, key=lambda x: x[1])
+
+    return os.path.join(directory_path, oldest_file[0])
+    
 driver = webdriver.Chrome()
 
 # Define the directory where your CSV files are located
 directory = 'streak_data'
 
-# List all files in the directory with the .csv extension
-csv_files = [f for f in os.listdir(directory) if f.endswith('.csv') and "_results" not in f and "combined" not in f]
-
 # Find the latest CSV file in the directory
-latest_csv_file = max(csv_files, key=lambda f: os.path.getctime(os.path.join(directory, f)))
+latest_csv_file = find_oldest_csv_from_yesterday(directory)
 
-print("latest_csv_file",latest_csv_file)
+print("oldest_csv_file from yesterday",latest_csv_file)
 
 # Construct the full file path
-file_path = os.path.join(directory, latest_csv_file)
+file_path = latest_csv_file
 
 # Load the latest CSV file into a DataFrame
 df = pd.read_csv(file_path)
@@ -43,10 +68,10 @@ date_format = "%Y-%m-%dT%H:%M:%S%z"
 
 def get_event(start_time, last_five):
     # Parse the string to create a datetime object
-    prop_start_time_dt = datetime.datetime.strptime(start_time, date_format)
+    prop_start_time_dt = datetime.strptime(start_time, date_format)
 
     for event in last_five:
-        event_start_time_dt = datetime.datetime.strptime(event["GameStartTime"], date_format)
+        event_start_time_dt = datetime.strptime(event["GameStartTime"], date_format)
 
         # Normalize time zones using pytz
         prop_start_time_dt = prop_start_time_dt.astimezone(pytz.UTC)
@@ -222,8 +247,8 @@ print(f'Percentage of Hit == False: {hit_false_percentage:.2f}%')
 
 # Save the sorted DataFrame, including percentages, to the CSV file with the new name
 new_file_name = latest_csv_file.replace('.csv', '_results.csv')
-new_file_path = os.path.join(directory, new_file_name)
-result_df.to_csv(new_file_path, index=False)
+#new_file_path = os.path.join(directory, new_file_name)
+result_df.to_csv(new_file_name, index=False)
 
 sheets.write_to_spreadsheet(new_file_path,"Last Five Streaker",'Individual Streaks',add_column_name="Event Date",add_column_data=new_file_name.replace("pp_streaks_","").replace("_results.csv",""),index=0,overwrite=False,append=True)
     
