@@ -26,7 +26,7 @@ def find_oldest_csv_from_yesterday(directory_path):
     files = [f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))]
 
     # Filter files with .csv extension
-    csv_files = [f for f in files if f.lower().endswith('.csv') and "combined" not in f.lower()]
+    csv_files = [f for f in files if f.lower().endswith('.csv') and "combined" not in f.lower() and "results" not in f.lower()]
 
     if not csv_files:
         return None  # No CSV files found in the directory
@@ -146,46 +146,50 @@ def process_row(row):
     league = row['League']
     team = row['Team']
     next_opp = row['Next Opp']
-    next_event_id = row['Next Event Id']
-    next_start_time = row['Next Start Time']
-    name = row['Name']
-    player_id = row['Player Id']
-    position = row['Position']
-    prop = row['Prop']
-    line = row['Line']
-    average = row['Average']
-    raw_avg_distance = row['Raw Avg Distance']
-    percent_avg_distance = row['Percent Avg Distance']
-    last_five_url = row['Last Five URL']
-    
-    if player_id not in last_five_data:
-        update_last_five(player_id, last_five_url)
 
-    actuals = last_five_data[player_id]
-    
-    event = get_event(next_start_time, actuals)
-    
-    if event is not None:
-        actual_prop_result = get_actual_result(prop, event)
-        result = "Push"
-        if actual_prop_result > float(line):
-            result = "Over"
-        elif actual_prop_result < float(line):
-            result = "Under"
+    if 'Next Event Id' in row:
+        next_event_id = row['Next Event Id']
+        next_start_time = row['Next Start Time']
+        name = row['Name']
+        player_id = row['Player Id']
+        position = row['Position']
+        prop = row['Prop']
+        line = row['Line']
+        average = row['Average']
+        raw_avg_distance = row['Raw Avg Distance']
+        percent_avg_distance = row['Percent Avg Distance']
+        last_five_url = row['Last Five URL']
         
-        row['Prop Actual'] = str(actual_prop_result)
-        row['Prop Result'] = result
-        row['Hit'] = str(result == streak)  # Populate the 'Hit' column
-    else:
-        row['Prop Actual'] = ""
-        row['Prop Result'] = ""
-        row['Hit'] = ""
+        if player_id not in last_five_data:
+            update_last_five(player_id, last_five_url)
 
-    # Create a single string with all row headers and values
-    row_info = f"Streak: {streak}, League: {league}, Team: {team}, Next Opp: {next_opp}, Next Event Id: {next_event_id}, Next Start Time: {next_start_time}, Name: {name}, Player_Id: {player_id}, Position: {position}, Prop: {prop}, Line: {line}, Average: {average}, Raw Avg Distance: {raw_avg_distance}, Percent Avg Distance: {percent_avg_distance}, Last Five URL: {last_five_url}, Hit {row['Hit']}"
+        actuals = last_five_data[player_id]
+        
+        event = get_event(next_start_time, actuals)
+        
+        if event is not None:
+            actual_prop_result = get_actual_result(prop, event)
+            result = "Push"
+            if actual_prop_result > float(line):
+                result = "Over"
+            elif actual_prop_result < float(line):
+                result = "Under"
+            
+            row['Prop Actual'] = str(actual_prop_result)
+            row['Prop Result'] = result
+            row['Hit'] = str(result == streak)  # Populate the 'Hit' column
+        else:
+            row['Prop Actual'] = ""
+            row['Prop Result'] = ""
+            row['Hit'] = ""
 
-    # Print the combined row information
-    print(row_info, flush=True)
+        # Create a single string with all row headers and values
+        row_info = f"Streak: {streak}, League: {league}, Team: {team}, Next Opp: {next_opp}, Next Event Id: {next_event_id}, Next Start Time: {next_start_time}, Name: {name}, Player_Id: {player_id}, Position: {position}, Prop: {prop}, Line: {line}, Average: {average}, Raw Avg Distance: {raw_avg_distance}, Percent Avg Distance: {percent_avg_distance}, Last Five URL: {last_five_url}, Hit {row['Hit']}"
+
+        # Print the combined row information
+        print(row_info, flush=True)
+    #else:
+       # print("row has no Next Event Id",row);
 
     return row
 
