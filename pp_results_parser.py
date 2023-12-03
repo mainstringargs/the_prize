@@ -144,6 +144,8 @@ for league_data in json_info:
                 name = (prop['display_name'])
                 position = prop['position']
                 market = prop['market']
+                team_abbr = prop['team']
+                opp_team_abbr = prop['description']
                 player_id = prop['player_id']
                 combo = prop['combo']
                 is_promo = prop['is_promo']
@@ -166,13 +168,13 @@ for league_data in json_info:
                     if line_score > actual_result:
                         result_string = "Under"
                     
-                    prop_results_list.append([league,name,position,market,is_promo,stat_type,line_score,actual_result,result_string])
+                    prop_results_list.append([league,name,position,market,team_abbr,opp_team_abbr,is_promo,stat_type,line_score,actual_result,result_string])
                     
                     
 with open('processing/prop_report_'+formatted_date+'.csv', 'w', newline='') as file:
     writer = csv.writer(file)
      
-    writer.writerow(["league","name","position","team","promo","prop","line","actual","result"])
+    writer.writerow(["league","name","position","team","team_abbr","opp_team_abbr","promo","prop","line","actual","result"])
     
     for result in prop_results_list:
         writer.writerow(result)

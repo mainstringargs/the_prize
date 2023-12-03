@@ -36,6 +36,7 @@ print("Generating results for",year_value,week_value);
 
 prop_lines = pd.read_csv("processing/prop_lines_"+year_value+"_week_"+week_value+".csv")
 
+print('file',"processing/prop_lines_"+year_value+"_week_"+week_value+".csv")
 print(prop_lines)
 
 driver = webdriver.Chrome()
@@ -68,7 +69,7 @@ decoded_url = base64.b64decode(url).decode()
 
 print("decoded_url",decoded_url, flush=True)
 
-props = ["NFL","MLB","NHL","NBA","CFB","CBB","NBA1H","NFL1H","CFB1H","CBB1H","CBB2H"]
+props = ["NFL","MLB","NHL","NBA","CFB","CBB","NBA1H","NFL1H","CFB1H","CBB1H","CBB2H","SOCCER","PGA"]
 
 filter = prop_lines['league'].isin(props)
 prop_lines = prop_lines[filter]
@@ -149,6 +150,7 @@ for ind in prop_lines.index:
     team = prop_lines['team'][ind]  
     opp = prop_lines['description'][ind]      
     market = prop_lines['market'][ind]
+    print(league,name,position,team,opp,market)
     game_id = prop_lines['game_id'][ind]    
     player_id = prop_lines['player_id'][ind]
     combo = prop_lines['combo'][ind]

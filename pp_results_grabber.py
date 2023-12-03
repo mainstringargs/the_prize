@@ -129,7 +129,7 @@ df = df.applymap(lambda x: x.strip().replace('\t','') if isinstance(x, str) else
 
 filter = df['combo']==True
 filtered_df = df[~filter]
-filtered_df = filtered_df[df['league'].isin(['NFL', 'NBA', 'MLB','NHL', 'CFB','CBB'])]
+filtered_df = filtered_df[df['league'].isin(['NFL', 'NBA', 'MLB','NHL', 'CFB','CBB','PGA','SOCCER'])]
 
 
 data_dict = filtered_df.to_dict(orient='records')
