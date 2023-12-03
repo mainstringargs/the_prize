@@ -109,7 +109,7 @@ for team in team_data:
 
     for event in team_data[team]:
         #print('event',event)
-        if 'Pass Yards' in event and 'Receiving Yards' in event and len(event['Pass Yards']) == 1 and len(event['Receiving Yards']) >= 1:      
+        if 'Pass Yards' in event and 'Receiving Yards' in event and len(event['Pass Yards']) == 1 and len(event['Receiving Yards']) > 1:      
             pass_yards = event['Pass Yards']
             receiving_yards = event['Receiving Yards']
           #  print('pass_yards',pass_yards)
@@ -122,23 +122,25 @@ for team in team_data:
             result = next(rriter)
             receiving_result1 = result['result']
             receiving_name1 = result['name']
-         #   receiving_result2 = next(rriter)['result']
+            result = next(rriter)
+            receiving_result2 = result['result']
+            receiving_name2 = result['name']
             
             raw_total_events = raw_total_events + 1
             team_raw_total = team_raw_total + 1
             
-            if pass_result == receiving_result1: # and pass_result == receiving_result2:
+            if pass_result == receiving_result1 and pass_result == receiving_result2:
                 raw_match_count = raw_match_count + 1
                 team_raw_match = team_raw_match + 1
             
                 if pass_result == 'Under':
                     raw_under_match_count = raw_under_match_count + 1
                     team_raw_under = team_raw_under + 1
-                    team_matches.append((pass_name, receiving_name1, 'Under'))
+                    team_matches.append((pass_name, receiving_name1, receiving_name2, 'Under'))
                 elif pass_result == 'Over':
                     raw_over_match_count = raw_over_match_count + 1 
                     team_raw_over = team_raw_over + 1
-                    team_matches.append((pass_name, receiving_name1, 'Over'))
+                    team_matches.append((pass_name, receiving_name1, receiving_name2, 'Over'))
     tally['raw_match_count'] = team_raw_match;
     tally['raw_over_match_count'] = team_raw_over;
     tally['raw_under_match_count'] = team_raw_under;
