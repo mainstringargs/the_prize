@@ -16,6 +16,7 @@ import random
 import pytz
 import argparse
 import base64
+import chardet
 import mapped_pp_stats
 import pandas as pd
 
@@ -34,7 +35,7 @@ week_value = str(args.week)
 
 print("Generating results for",year_value,week_value);
 
-prop_lines = pd.read_csv("processing/prop_lines_"+year_value+"_week_"+week_value+".csv")
+prop_lines = pd.read_csv("processing/prop_lines_"+year_value+"_week_"+week_value+".csv", encoding='utf-8')
 
 print('file',"processing/prop_lines_"+year_value+"_week_"+week_value+".csv")
 print(prop_lines)
@@ -248,8 +249,14 @@ with open(csv_filename, 'w', newline='') as file:
     for streak in streaks:
         print(streak,flush=True);
         writer.writerow(streak)
+        
+with open(csv_filename, 'rb') as f:
+    result = chardet.detect(f.read())
+
+# Print the detected encoding
+print("Detected encoding:", result['encoding'])
     
-df = pd.read_csv(csv_filename)
+df = pd.read_csv(csv_filename, encoding=result['encoding'])
 
 df = df.sort_values(by=['Streak','Percent Avg Distance'], ascending=[True, False])
 

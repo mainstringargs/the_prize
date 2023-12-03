@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import datetime 
 import sheets
+import chardet
 
 # Set the directory path
 directory_path = "streak_data"
@@ -16,7 +17,15 @@ merged_df = pd.DataFrame()
 # Loop through the files and concatenate them into the merged dataframe
 for file in files:
     file_path = os.path.join(directory_path, file)
-    df = pd.read_csv(file_path)
+    
+    with open(file_path, 'rb') as f:
+        result = chardet.detect(f.read())
+
+    # Print the detected encoding
+    print("Detected encoding:", result['encoding'])
+        
+    df = pd.read_csv(file_path, encoding=result['encoding'])
+    
     merged_df = pd.concat([merged_df, df], ignore_index=True)
     
 merged_df.to_csv('out.csv')

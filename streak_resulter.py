@@ -10,6 +10,7 @@ import csv
 import fnmatch
 import datetime
 import time
+import chardet
 import random
 import pytz
 import argparse
@@ -58,8 +59,13 @@ print("oldest_csv_file from yesterday",latest_csv_file)
 # Construct the full file path
 file_path = latest_csv_file
 
-# Load the latest CSV file into a DataFrame
-df = pd.read_csv(file_path)
+with open(file_path, 'rb') as f:
+    result = chardet.detect(f.read())
+
+# Print the detected encoding
+print("Detected encoding:", result['encoding'])
+    
+df = pd.read_csv(file_path, encoding=result['encoding'])
 
 last_five_data = {}
 
