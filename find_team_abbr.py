@@ -1,6 +1,53 @@
 import os
 import pandas as pd
 
+def city_to_abbreviation(city_name):
+    team_mappings = {
+        'Arizona': 'ARI',
+        'Atlanta': 'ATL',
+        'Baltimore': 'BAL',
+        'Buffalo': 'BUF',
+        'Carolina': 'CAR',
+        'Chicago': 'CHI',
+        'Cincinnati': 'CIN',
+        'Cleveland': 'CLE',
+        'Dallas': 'DAL',
+        'Denver': 'DEN',
+        'Detroit': 'DET',
+        'Green Bay': 'GB',
+        'Houston': 'HOU',
+        'Indianapolis': 'IND',
+        'Jacksonville': 'JAX',
+        'Kansas City': 'KC',
+        'Las Vegas': 'LV',
+        'Los Angeles Rams': 'LAR',  # Rams
+        'Los Angeles Chargers': 'LAC',
+        'Miami': 'MIA',
+        'Minnesota': 'MIN',
+        'New England': 'NE',
+        'New Orleans': 'NO',
+        'New York Giants': 'NYG',
+        'New York Jets': 'NYJ',
+        'Philadelphia': 'PHI',
+        'Pittsburgh': 'PIT',
+        'San Francisco': 'SF',
+        'Seattle': 'SEA',
+        'Tampa Bay': 'TB',
+        'Tennessee': 'TEN',
+        'Washington': 'WAS',
+        # Add more city-to-abbreviation mappings as needed
+    }
+
+    # Convert the input city name to title case to handle case variations
+    city_name = city_name.title()
+
+    # Use the mapping dictionary to get the abbreviation, or return None if not found
+    abbreviation = team_mappings.get(city_name)
+
+    return abbreviation
+
+
+
 def combine_csv_files(directory, filename_format):
     """
     Combine all CSV files in the specified directory matching the given filename format.
