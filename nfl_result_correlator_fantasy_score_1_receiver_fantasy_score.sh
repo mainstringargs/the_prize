@@ -1,0 +1,1 @@
+python same_team_correlator.py --qb_prop 'Fantasy Score' --other_prop 'Fantasy Score' --reverse_other=True --num_other=1

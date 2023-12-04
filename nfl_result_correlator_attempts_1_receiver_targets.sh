@@ -1,0 +1,1 @@
+python same_team_correlator.py --qb_prop 'Pass Attempts' --other_prop 'Rec Targets' --reverse_other=True --num_other=1
