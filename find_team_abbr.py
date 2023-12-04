@@ -73,7 +73,7 @@ def combine_csv_files(directory, filename_format):
 
         # Read the CSV file into a DataFrame
         df = pd.read_csv(file_path)
-        print("loading",file_path,flush=True)
+       # print("loading",file_path,flush=True)
 
         # Concatenate the DataFrame to the combined DataFrame
         combined_df = pd.concat([combined_df, df], ignore_index=True)

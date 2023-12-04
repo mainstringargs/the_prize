@@ -152,10 +152,11 @@ for league_data in json_info:
                 line_score = prop['line_score']
                 stat_type = prop['stat_type']
                 start_time = prop['start_time']
+                game_id = prop['game_id']
                 last_five_url = decoded_url+str(player_id)+"/last_five_games?league_name="+str(league)
                 
                 if not combo:
-                    print(player_id,league,name,position,market,combo,is_promo,line_score,stat_type,start_time,last_five_url);
+                    print(player_id,league,name,position,market,combo,is_promo,line_score,stat_type,start_time,last_five_url, game_id);
                     actual_result = get_actual_result(prop,event)
                     
                     if actual_result is None:
@@ -168,13 +169,13 @@ for league_data in json_info:
                     if line_score > actual_result:
                         result_string = "Under"
                     
-                    prop_results_list.append([league,name,position,market,team_abbr,opp_team_abbr,is_promo,stat_type,line_score,actual_result,result_string])
+                    prop_results_list.append([league,name,position,market,team_abbr,opp_team_abbr,game_id,start_time,is_promo,stat_type,line_score,actual_result,result_string])
                     
                     
 with open('processing/prop_report_'+formatted_date+'.csv', 'w', newline='') as file:
     writer = csv.writer(file)
      
-    writer.writerow(["league","name","position","team","team_abbr","opp_team_abbr","promo","prop","line","actual","result"])
+    writer.writerow(["league","name","position","team","team_abbr","opp_team_abbr","game_id","start_time","promo","prop","line","actual","result"])
     
     for result in prop_results_list:
         writer.writerow(result)
