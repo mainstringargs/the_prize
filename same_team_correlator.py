@@ -69,15 +69,16 @@ for filename in os.listdir(directory):
                 team = row['team']
                 name = row['name'] 
                 
-                team_abbr = find_team_abbr.city_to_abbreviation(team)
-                
-                if (team == "Los Angeles" or team == "New York"):
-                    team_abbr = find_team_abbr.find_team_abbr(combined_dataframe, name, "NFL")
-                    if not team_abbr:
-                        print("No abbr for",team,prop,name,flush=True)
-                        team_abbr = team
-                        
-                team = team_abbr
+                if league == 'NFL':
+                    team_abbr = find_team_abbr.city_to_abbreviation(team)
+                    
+                    if (team == "Los Angeles" or team == "New York"):
+                        team_abbr = find_team_abbr.find_team_abbr(combined_dataframe, name, "NFL")
+                        if not team_abbr:
+                            print("No abbr for",team,prop,name,flush=True)
+                            team_abbr = team
+                            
+                    team = team_abbr
                 
                 line = row['line']                        
                 actual = row['actual']  
