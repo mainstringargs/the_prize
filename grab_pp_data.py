@@ -39,7 +39,14 @@ schedule.every().day.at("14:30").do(run_streak_driver)
 schedule.every().day.at("17:30").do(run_streak_driver)
 schedule.every().day.at("12:00").do(run_get_props_json)
 schedule.every().day.at("09:45").do(run_ftn_resulter_nba)
-schedule.every().day.at("23:00").do(run_get_props_json)
+schedule.every().day.at("06:00").do(run_get_props_json)
+schedule.every().day.at("08:00").do(run_get_props_json)
+schedule.every().day.at("10:00").do(run_get_props_json)
+schedule.every().day.at("12:00").do(run_get_props_json)
+schedule.every().day.at("14:00").do(run_get_props_json)
+schedule.every().day.at("16:00").do(run_get_props_json)
+schedule.every().day.at("18:00").do(run_get_props_json)
+schedule.every().day.at("20:00").do(run_get_props_json)
 
 schedule.every().day.at("07:15").do(prop_comp_driver)
 schedule.every().day.at("08:15").do(prop_comp_driver)
@@ -71,10 +78,10 @@ def checker():
     if today in [0, 1, 4] and hour == 10 and minute == 1 and second<1.0:
         run_ftn_resulter_nfl()
 
-    if today in [5, 6] and hour == 9 and minute == 30 and second<1.0:
-        run_get_props_json()
+   # if today in [5, 6] and hour == 9 and minute == 30 and second<1.0:
+     #   run_get_props_json()
     
 while True:
     checker()
     schedule.run_pending()
-    time.sleep(1)
+    time.sleep(5)

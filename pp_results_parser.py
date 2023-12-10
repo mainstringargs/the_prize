@@ -48,7 +48,7 @@ def find_newest_file_from_day(directory_path, specific_day):
         # Check if the file is a regular file (not a directory)
         if os.path.isfile(file_path):
             file_time = os.path.getctime(file_path)
-            if "results_prop_info" in filename:
+            if "results_prop_info" in filename and "full" not in filename:
                 file_time = filename.replace("results_prop_info_","").replace(".json","")
                 file_time = datetime.datetime.strptime(file_time, "%Y-%m-%d").timestamp()
             
