@@ -55,5 +55,6 @@ df = pd.DataFrame(data)
 df = df.applymap(lambda x: x.strip().replace('\t','') if isinstance(x, str) else x)
 filter = df['combo']==True
 filtered_df = df[~filter]
+filtered_df = filtered_df[filtered_df['odds_type'].isin(['standard'])]
 filtered_df.to_csv("processing/prop_lines_"+year+"_week_"+week+".csv")
 

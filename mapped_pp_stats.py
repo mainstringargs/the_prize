@@ -55,7 +55,7 @@ def get_mapped_stat(stat_type):
         "Shots On Target": "ShotsOnTarget",
         "Shifts": "Shifts", 
         "Goals": "Goals", 
-        "Goals + Assists": "Goals,Assists", 
+        "Goals + Assist": "Goals,Assist", 
         "Strokes": "Strokes", 
         "Birdies Or Better": "BirdiesOrBetter", 
         "Shots On Goal": "ShotsOnGoal", 

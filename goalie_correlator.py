@@ -53,7 +53,7 @@ def process_csv_files(
                 result = chardet.detect(f.read())
 
             # Print the detected encoding
-            print("Detected encoding:", result['encoding'])
+           # print("Detected encoding:", result['encoding'],file_path )
           
             with open(file_path, newline="", encoding=result['encoding']) as csvfile:
                 reader = csv.DictReader(csvfile)
@@ -78,8 +78,8 @@ def process_csv_files(
                         result = row["result"]
 
                         if prop in relevant_props:
-                            if "Owen" in name:
-                                print(row)
+                           # if "Owen" in name:
+                               # print(row)
                             if team not in team_data:
                                 team_data[team] = []
 
@@ -134,6 +134,10 @@ def process_csv_files(
                     if is_goalie:
                         game_data[game_id]["Goalie "+team+" Other "+opp_team]['Goalie'][name] = v
                     else:
+                        if ("Goalie "+opp_team+" Other "+team) not in game_data[game_id]:
+                            game_data[game_id]["Goalie "+opp_team+" Other "+team] = {}
+                            game_data[game_id]["Goalie "+opp_team+" Other "+team]['Other'] = {}
+                    
                         game_data[game_id]["Goalie "+opp_team+" Other "+team]['Other'][name] = v
     return game_data
 
@@ -178,7 +182,10 @@ def calculate_correlations(
             team_raw_total = 0
             tally = {}
             team_matches = []
-            print(event)
+            #print(event)
+            if 'Goalie' not in game_data[game_id][event] or 'Other' not in game_data[game_id][event]:
+                print(game_id,event,game_data[game_id][event],"is broken")
+                continue;
             matchup_goalie = game_data[game_id][event]['Goalie']
             matchup_other = game_data[game_id][event]['Other']
             #print(matchup_other)

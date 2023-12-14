@@ -80,9 +80,10 @@ print(f"Running for date {formatted_date}.")
 directory_path = "pp_data"
 all_files = find_all_files_from_day(directory_path, formatted_date)
 
-print("all_files",all_files)
+print("all_files",all_files,flush=True)
 
 props_cache = set()
+prop_info = {}
 
 for newest_file in all_files:
     with open(str(newest_file), 'rb') as f:
@@ -111,7 +112,7 @@ for newest_file in all_files:
  #   filtered_df = df[~filter]
     filtered_df = df[df['league'].isin(['NFL', 'NBA', 'MLB','NHL', 'CFB','CBB','PGA','SOCCER'])]
 
-
+    filtered_df = filtered_df[filtered_df['odds_type'].isin(['standard'])]
     data_dict = filtered_df.to_dict(orient='records')
 
     # Navigate to the desired URL (base 64 encoded)
@@ -121,7 +122,6 @@ for newest_file in all_files:
     def are_same_day(datetime1, datetime2):
         return datetime1.year == datetime2.year and datetime1.month == datetime2.month and datetime1.day == datetime2.day
 
-    prop_info = {}
 
     val = 0;
 
