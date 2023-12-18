@@ -48,13 +48,13 @@ def find_newest_file_from_day(directory_path, specific_day):
         # Check if the file is a regular file (not a directory)
         if os.path.isfile(file_path):
             file_time = os.path.getctime(file_path)
-            if "results_prop_info" in filename:
+            if "results_prop_info" in filename and "full" not in filename:
                 file_time = filename.replace("results_prop_info_","").replace(".json","")
                 file_time = datetime.datetime.strptime(file_time, "%Y-%m-%d").timestamp()
             
-            print(file_time)
-            file_date = str(datetime.datetime.fromtimestamp(file_time).date())
 
+            file_date = str(datetime.datetime.fromtimestamp(file_time).date())
+            print(filename, file_date, flush=True)
             # Check if the file's date matches the specific day
             if file_date == specific_day:
                 # If it's the first file matching the specific day or newer than the previous newest file

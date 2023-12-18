@@ -8,6 +8,12 @@ import find_team_abbr
 
 qb_prop_prefix = "QB_"
 
+directory_path = "processing"
+filename_format = "prop_lines_"
+combined_dataframe = find_team_abbr.combine_csv_files(
+    directory_path, filename_format
+)
+
 def process_csv_files(
     qb_prop="Pass Yards",
     other_prop="Receiving Yards",
@@ -36,12 +42,6 @@ def process_csv_files(
 
     # Initialize a dictionary to store combined data for each league and prop
     team_data = {}
-
-    directory_path = "processing"
-    filename_format = "prop_lines_"
-    combined_dataframe = find_team_abbr.combine_csv_files(
-        directory_path, filename_format
-    )
 
     # Loop through CSV files in the directory
     for filename in os.listdir(directory):
@@ -119,6 +119,7 @@ def calculate_correlations(
     num_other=1,
     reverse_other=True,
     push_as_match=True,
+    pairwise_correlation=False
 ):
     raw_match_count = 0
     raw_over_match_count = 0
@@ -149,11 +150,12 @@ def calculate_correlations(
         team_matches = []
 
         for event in team_data[team]:
+        
             if (
                 qb_prop in event
                 and other_prop in event
                 and len(event[qb_prop]) >= 1
-                and len(event[other_prop]) >= num_other
+                and (pairwise_correlation or len(event[other_prop]) >= num_other)
             ):
                 pass_yards = event[qb_prop]
                 receiving_yards = event[other_prop]
@@ -163,40 +165,79 @@ def calculate_correlations(
                 rriter = iter(receiving_yards.values())
                 results = []
                 others = []
-                for i in range(num_other):
-                    result = next(rriter)
-                    result_val = result["result"]
-                    result_name = result["name"]
-                    results.append((result_val, result_name))
-                    others.append(result_name)
+                
+                if pairwise_correlation:
+                    num_other = len(event[other_prop])
+                 
+                    for i in range(num_other):
+                        results = []
+                        others = []
+                        result = next(rriter)
+                        result_val = result["result"]
+                        result_name = result["name"]
+                        results.append((result_val, result_name))
+                        others.append(result_name)
 
-                all_over_match = all_values_match(results, "Over", push_as_match, num_other)
-                all_under_match = all_values_match(
-                    results, "Under", push_as_match, num_other
-                )
+                        all_over_match = all_values_match(results, "Over", push_as_match, 1)
+                        all_under_match = all_values_match(
+                            results, "Under", push_as_match, 1
+                        )
 
-                raw_total_events = raw_total_events + 1
-                team_raw_total = team_raw_total + 1
+                        raw_total_events = raw_total_events + 1
+                        team_raw_total = team_raw_total + 1
 
-                if (
-                    (all_over_match and pass_result == "Over")
-                    or (all_under_match and pass_result == "Under")
-                    or (pass_result == "Push" and push_as_match)
-                ):
-                    raw_match_count = raw_match_count + 1
-                    team_raw_match = team_raw_match + 1
-                    direction = None
-                    if all_under_match or (pass_result == "Push" and push_as_match):
-                        raw_under_match_count = raw_under_match_count + 1
-                        team_raw_under = team_raw_under + 1
-                        direction = "Under"
-                    elif all_over_match or (pass_result == "Push" and push_as_match):
-                        raw_over_match_count = raw_over_match_count + 1
-                        team_raw_over = team_raw_over + 1
-                        direction = "Over"
-                    if direction != None:
+
+                        raw_match_count = raw_match_count + 1
+                        team_raw_match = team_raw_match + 1
+                        direction = 'None'
+                        if all_under_match or (pass_result == "Push" and push_as_match):
+                            raw_under_match_count = raw_under_match_count + 1
+                            team_raw_under = team_raw_under + 1
+                            direction = "Under"
+                        elif all_over_match or (pass_result == "Push" and push_as_match):
+                            raw_over_match_count = raw_over_match_count + 1
+                            team_raw_over = team_raw_over + 1
+                            direction = "Over"
+                            
+                        #if direction != None:
                         tuple_match = (pass_name, tuple(others), direction)
                         team_matches.append(tuple_match)
+                else:
+                                     
+                    for i in range(num_other):
+                        result = next(rriter)
+                        result_val = result["result"]
+                        result_name = result["name"]
+                        results.append((result_val, result_name))
+                        others.append(result_name)
+
+                    all_over_match = all_values_match(results, "Over", push_as_match, num_other)
+                    all_under_match = all_values_match(
+                        results, "Under", push_as_match, num_other
+                    )
+
+                    raw_total_events = raw_total_events + 1
+                    team_raw_total = team_raw_total + 1
+
+                    if (
+                        (all_over_match and pass_result == "Over")
+                        or (all_under_match and pass_result == "Under")
+                        or (pass_result == "Push" and push_as_match)
+                    ):
+                        raw_match_count = raw_match_count + 1
+                        team_raw_match = team_raw_match + 1
+                        direction = None
+                        if all_under_match or (pass_result == "Push" and push_as_match):
+                            raw_under_match_count = raw_under_match_count + 1
+                            team_raw_under = team_raw_under + 1
+                            direction = "Under"
+                        elif all_over_match or (pass_result == "Push" and push_as_match):
+                            raw_over_match_count = raw_over_match_count + 1
+                            team_raw_over = team_raw_over + 1
+                            direction = "Over"
+                        if direction != None:
+                            tuple_match = (pass_name, tuple(others), direction)
+                            team_matches.append(tuple_match)
 
             tally["raw_match_count"] = team_raw_match
             tally["raw_over_match_count"] = team_raw_over

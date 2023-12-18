@@ -69,6 +69,8 @@ if 'Hit' in merged_df.columns:
     league_totals = merged_df.groupby('League')['Hit'].count().reset_index()
     league_percentages = pd.merge(league_percentages, league_totals, on='League', how='left')
     league_percentages = league_percentages.rename(columns={'Hit': 'Total Count'})
+    
+    league_percentages['Miss Percentage'] = league_percentages['Miss Percentage'].sub(league_percentages['Push Percentage'])
 
     # Calculate the percentage of Hit, Miss, and Push for each Prop within each League
     prop_percentages = merged_df.groupby(['League', 'Prop'])['Hit'].value_counts(normalize=True).unstack(fill_value=0)
@@ -84,7 +86,12 @@ if 'Hit' in merged_df.columns:
     # Sort the prop data within each league by "Prop Hit Percentage"
     prop_percentages = prop_percentages.sort_values(by=['League', 'Prop Hit Percentage'], ascending=[True, False])
 
+    #print(prop_percentages[['Prop Hit Percentage','Prop Miss Percentage','Prop Push Percentage']])
     
+    prop_percentages['Prop Miss Percentage'] = prop_percentages.apply(lambda row: row['Prop Miss Percentage'] - row['Prop Push Percentage'], axis=1)    
+    
+   # print(prop_percentages[['Prop Hit Percentage','Prop Miss Percentage','Prop Push Percentage']])
+        
     # Calculate the overall percentage of Hit, Miss, and Push
     total_rows = float(merged_df['Streak'].count())
 
@@ -124,27 +131,27 @@ if 'Hit' in merged_df.columns:
     # Add "Overall" row for overall percentages
     overall_row = pd.DataFrame({
         'League': ['Overall'],
-        'Hit Percentage': [round(hit_percent, 2)],
-        'Miss Percentage': [round(miss_percent, 2)],
-        'Push Percentage': [round(push_percent, 2)],
+        'Hit Percentage': [round(hit_percent, 3)],
+        'Miss Percentage': [round(miss_percent, 3)],
+        'Push Percentage': [round(push_percent, 3)],
         'Total Count': [total_rows]
     })
     
     # Add "Overall" row for overall percentages
     overall_row_over = pd.DataFrame({
         'League': ['Overall_Over'],
-        'Hit Percentage': [round(over_hit_percent, 2)],
-        'Miss Percentage': [round(over_miss_percent, 2)],
-        'Push Percentage': [round(over_push_percent, 2)],
+        'Hit Percentage': [round(over_hit_percent, 3)],
+        'Miss Percentage': [round(over_miss_percent, 3)],
+        'Push Percentage': [round(over_push_percent, 3)],
         'Total Count': [over_total_count]
     })    
 
     # Add "Overall" row for overall percentages
     overall_row_under = pd.DataFrame({
         'League': ['Overall_Under'],
-        'Hit Percentage': [round(under_hit_percent, 2)],
-        'Miss Percentage': [round(under_miss_percent, 2)],
-        'Push Percentage': [round(under_push_percent, 2)],
+        'Hit Percentage': [round(under_hit_percent, 3)],
+        'Miss Percentage': [round(under_miss_percent, 3)],
+        'Push Percentage': [round(under_push_percent, 3)],
         'Total Count': [under_total_count]
     })    
 
@@ -159,11 +166,11 @@ if 'Hit' in merged_df.columns:
     interleaved_df = interleaved_df[columns_order]
 
     # Save the combined percentages to a CSV file with single-digit precision
-    interleaved_df.to_csv('streak_data/combined_summary_report.csv', index=False, float_format='%.2f')
+    interleaved_df.to_csv('streak_data/combined_summary_report.csv', index=False, float_format='%.3f')
     
     today = datetime.datetime.now()
     formatted_date = today.strftime("%Y-%m-%d %H:%M")      
     
-    sheets.write_to_spreadsheet('streak_data/combined_summary_report.csv',"Last Five Streaker",'Combined',add_column_name="Updated",add_column_data=formatted_date,index=0,overwrite=True,append=False)
+    sheets.write_to_spreadsheet('streak_data/combined_summary_report.csv',"Last Five Streaker",'Combined',add_column_name="Updated",add_column_data=formatted_date,index=0,overwrite=True)
 else:
     print("The 'Hit' column does not exist in the dataframe.")

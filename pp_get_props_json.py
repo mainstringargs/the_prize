@@ -8,6 +8,7 @@ import time
 import os
 import base64
 from selenium.webdriver.chrome.options import Options
+import gen_correlation_links
 
 chrome_options = Options()
 #chrome_options.add_argument("--headless")
@@ -61,6 +62,8 @@ try:
         json.dump(data, json_file, ensure_ascii=False, indent=4)
 
     print(f"Webpage data saved to {json_filename}")
+    
+    gen_correlation_links.gen(json_filename)
 
 except json.JSONDecodeError:
     print("The extracted text is not valid JSON.")

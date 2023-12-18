@@ -9,7 +9,7 @@ gc = pygsheets.authorize(service_file='creds.json')
 
 def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_name=None, add_column_data=None, index=1, overwrite=False, append=False):
     print("file_name", file_name, "spreadsheet_name", spreadsheet_name, "sheet_name", sheet_name, "index", index, flush=True)
-
+    
     try:
         # Detect the encoding of the file
         with open(file_name, 'rb') as f:

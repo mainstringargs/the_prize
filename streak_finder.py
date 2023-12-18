@@ -151,7 +151,7 @@ for ind in prop_lines.index:
     team = prop_lines['team'][ind]  
     opp = prop_lines['description'][ind]      
     market = prop_lines['market'][ind]
-    print(league,name,position,team,opp,market)
+    #print(league,name,position,team,opp,market)
     game_id = prop_lines['game_id'][ind]    
     player_id = prop_lines['player_id'][ind]
     combo = prop_lines['combo'][ind]
@@ -160,7 +160,7 @@ for ind in prop_lines.index:
     stat_type = prop_lines['stat_type'][ind]
     start_time = prop_lines['start_time'][ind]
     last_five_url = decoded_url+str(player_id)+"/last_five_games?league_name="+str(league)
-    print(player_id,league,team,opp,game_id,name,player_id,position,market,combo,is_promo,line_score,stat_type,start_time,last_five_url);
+    #print(player_id,league,team,opp,game_id,name,player_id,position,market,combo,is_promo,line_score,stat_type,start_time,last_five_url);
     
     if player_id not in prop_info:
     
@@ -247,7 +247,7 @@ with open(csv_filename, 'w', newline='') as file:
     writer.writerow(["Streak","League","Team","Next Opp","Next Event Id","Next Start Time","Name","Player Id","Position","Prop","Line","Average","Raw Avg Distance","Percent Avg Distance","Last Five URL"])
 
     for streak in streaks:
-        print(streak,flush=True);
+        #print(streak,flush=True);
         writer.writerow(streak)
         
 with open(csv_filename, 'rb') as f:

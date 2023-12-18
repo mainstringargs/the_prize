@@ -87,7 +87,9 @@ for d in json_info['data']:
 
 
 df = pd.DataFrame(data)
+
 df = df.applymap(lambda x: x.strip().replace('\t','') if isinstance(x, str) else x)
+df = df[df['odds_type'].isin(['standard'])]
 df.to_csv(csv_file_name)
 
 
