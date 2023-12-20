@@ -5,7 +5,7 @@ import datetime
 import base64;
 
 root_url = 'aHR0cHM6Ly9hcHAucHJpemVwaWNrcy5jb20vYm9hcmQ/cHJvamVjdGlvbnM9'
-max_others_goalie_sports = 3
+max_others_goalie_sports = 1
 def gen_links_goalie_sports(player,other_players):
     decoded_url = base64.b64decode(root_url).decode('utf-8')
     prop_id = player['prop_id']
@@ -78,7 +78,7 @@ def soccer_correlations(soccer_dict):
                 if key != pkey:
                     other_key = pkey;
         
-            if other_key in players and other_key is not None:
+            if key in goalies and key is not None and other_key in players and other_key is not None:
                 print("SOCCER", datetime.datetime.strptime(value[0]['start_time'], '%Y-%m-%dT%H:%M:%S%z'))
                 try:
                     print('key', key.encode('utf-8').decode('utf-8', 'ignore') ,'other_key', other_key.encode('utf-8').decode('utf-8', 'ignore'))
@@ -167,7 +167,7 @@ def gen_links_pairs(team_1_players,team_1_direction,team_2_players,team_2_direct
     for player in team_2_players:
         prop_id = player['prop_id']
         line_score = player['line_score']   
-        url = url+prop_id+"-"+team_1_direction+"-"+str(line_score)+","
+        url = url+prop_id+"-"+team_2_direction+"-"+str(line_score)+","
             
     url = url[:-1]+"&wager_id=action"
     
@@ -246,6 +246,76 @@ def football_correlations(football_dict):
            oo_url = gen_links_pairs(pairs[0],'u',pairs[1],'u')
            print(oo_url);
 
+def goalie_correlations_pairwise(football_dict, other_prop="Shots On Goal"):
+    events = {}
+    # Sort the dictionary by start_time
+    football_dict = (sorted(football_dict, key=key_function))  
+    for data in football_dict:
+        game_id = data['game_id']
+        team = data['team_name']
+        position = data['position']
+        stat_type = data['stat_type']
+        line = float(data['line_score'])
+        start_time = data['start_time']
+        
+        if game_id is None or game_id == 'nan':
+            print("game_id is null",data)
+            continue;
+        
+        if game_id not in events:
+            events[game_id] = {}
+            events[game_id]['Goalie Saves'] = {}
+            events[game_id][other_prop] = {}
+            
+        if stat_type==other_prop:
+            if team not in events[game_id][other_prop]:
+                events[game_id][other_prop][team] = []
+                
+            events[game_id][other_prop][team].append(data)
+            events[game_id][other_prop][team] = sorted(events[game_id][other_prop][team], key=lambda x: x['line_score'], reverse=True)
+        
+        if stat_type=="Goalie Saves":
+            if team not in events[game_id]['Goalie Saves']:
+                events[game_id]['Goalie Saves'][team] = []    
+                
+            events[game_id]['Goalie Saves'][team].append(data)
+            
+    for event in events:
+      #  print(events[event])
+        this_event = events[event]
+        qb = this_event['Goalie Saves']
+        players = this_event[other_prop]
+        
+        pairs = []
+        if len(qb)>1:
+            qb_iter = iter(qb)
+            first_qb = next(qb_iter)
+            second_qb = next(qb_iter)
+            #print(qb[first_qb])
+            print(qb[first_qb][0]['league'], datetime.datetime.strptime(qb[first_qb][0]['start_time'], '%Y-%m-%dT%H:%M:%S%z'),qb[first_qb][0]['team'],'vs',qb[second_qb][0]['team'])
+        for key, value in qb.items():
+            #print(key, value)
+            qb = value;
+            other_players = []
+            if key in players and key is not None:
+                other_players = players[key]
+                
+            if len(other_players) > 0:
+               # print('!!qb',qb)
+                #print('!!!other_players',other_players[0])
+                pairs.append([qb[0], other_players[0]])
+                
+        if len(pairs) == 2:
+           #print('pairs[0]',pairs[0])
+           #print('pairs[1]',pairs[1])           
+           oo_url = gen_links_pairs(pairs[0],'o',pairs[1],'o')
+           print(oo_url);
+           oo_url = gen_links_pairs(pairs[0],'o',pairs[1],'u')
+           print(oo_url);
+           oo_url = gen_links_pairs(pairs[0],'u',pairs[1],'o')
+           print(oo_url);
+           oo_url = gen_links_pairs(pairs[0],'u',pairs[1],'u')
+           print(oo_url);
 
 def gen(json_file_ref):
 
@@ -282,3 +352,5 @@ def gen(json_file_ref):
     nhl_correlations(filtered_df[filtered_df['league'].isin(['NHL'])].to_dict(orient='records'))
     football_correlations(filtered_df[filtered_df['league'].isin(['NFL'])].to_dict(orient='records'))
     football_correlations(filtered_df[filtered_df['league'].isin(['CFB'])].to_dict(orient='records'))
+    goalie_correlations_pairwise(filtered_df[filtered_df['league'].isin(['NHL'])].to_dict(orient='records'))
+    goalie_correlations_pairwise(filtered_df[filtered_df['league'].isin(['SOCCER'])].to_dict(orient='records'), "Shots On Target")    

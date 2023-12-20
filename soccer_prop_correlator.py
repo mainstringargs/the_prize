@@ -69,7 +69,7 @@ for reverse in [False,True]:
         for rx_prop_check in rx_props:
             qb_prop = qb_prop_check
             other_prop = rx_prop_check
-            num_other = 1
+            num_other = 2
             reverse_other = reverse
             push_as_match = True
             league = "SOCCER"

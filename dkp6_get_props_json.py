@@ -9,6 +9,17 @@ import os
 import base64
 from selenium.webdriver.chrome.options import Options
 
+import time
+import random
+
+def sleep_random_time():
+    # Generate a random sleep time between 30 seconds and 1 minutes
+    sleep_time = random.uniform(30, 60)  # seconds
+
+    print(f"Sleeping for {sleep_time} seconds...", flush=True)
+    time.sleep(sleep_time)
+    print("Awake now!", flush=True)
+
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 
@@ -26,45 +37,49 @@ else:
     print(f"Directory '{directory_path}' already exists.")
 
 # Navigate to the desired URL (base 64 encoded)
-url = "aHR0cHM6Ly9waWNrNi5kcmFmdGtpbmdzLmNvbS8/X2RhdGE9cm91dGVzJTJGX2luZGV4="
-decoded_url = base64.b64decode(url).decode()
+urls = {"NBA":"aHR0cHM6Ly9waWNrNi5kcmFmdGtpbmdzLmNvbS8/c3BvcnQ9TkJBJl9kYXRhPXJvdXRlcyUyRl9pbmRleA==", "NFL":"aHR0cHM6Ly9waWNrNi5kcmFmdGtpbmdzLmNvbS8/c3BvcnQ9TkZMJl9kYXRhPXJvdXRlcyUyRl9pbmRleA=="}
 
-print("decoded_url",decoded_url, flush=True)
+for league, url in urls.items():
+    decoded_url = base64.b64decode(url).decode()
 
-driver.get(decoded_url)
-
-# Wait for at least one <pre> element to load (adjust the timeout as needed)
-wait = WebDriverWait(driver, 10)
-elements = wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'pre')))
-
-# Initialize an empty list to store the text content of all <pre> elements
-json_data_list = []
-
-# Extract the text content of all <pre> elements
-for element in elements:
-    json_data_list.append(element.text)
-
-# Attempt to parse the extracted text as JSON
-try:
-    # Combine the text content of all <pre> elements into a single JSON string
-    combined_json_data = ''.join(json_data_list)
+    print("decoded_url",decoded_url, flush=True)
     
-    data = json.loads(combined_json_data)
+    driver.get(decoded_url)
 
-    # Generate a timestamp
-    timestamp = time.strftime("%Y-%m-%d-%H%M%S")
+    sleep_random_time()
 
-    # Define the JSON filename with the timestamp
-    json_filename = f"{directory_path}/dkp6_projections_{timestamp}.json"
+    # Wait for at least one <pre> element to load (adjust the timeout as needed)
+    wait = WebDriverWait(driver, 60)
+    elements = wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'pre')))
 
-    # Save the JSON data to a file with pretty printing and without escaping characters
-    with open(json_filename, "w", encoding="utf-8") as json_file:
-        json.dump(data, json_file, ensure_ascii=False, indent=4)
+    # Initialize an empty list to store the text content of all <pre> elements
+    json_data_list = []
 
-    print(f"Webpage data saved to {json_filename}")
+    # Extract the text content of all <pre> elements
+    for element in elements:
+        json_data_list.append(element.text)
 
-except json.JSONDecodeError:
-    print("The extracted text is not valid JSON.")
+    # Attempt to parse the extracted text as JSON
+    try:
+        # Combine the text content of all <pre> elements into a single JSON string
+        combined_json_data = ''.join(json_data_list)
+        
+        data = json.loads(combined_json_data)
+
+        # Generate a timestamp
+        timestamp = time.strftime("%Y-%m-%d-%H%M%S")
+
+        # Define the JSON filename with the timestamp
+        json_filename = f"{directory_path}/dkp6_projections_{league}_{timestamp}.json"
+
+        # Save the JSON data to a file with pretty printing and without escaping characters
+        with open(json_filename, "w", encoding="utf-8") as json_file:
+            json.dump(data, json_file, ensure_ascii=False, indent=4)
+
+        print(f"Webpage data saved to {json_filename}")
+
+    except json.JSONDecodeError:
+        print("The extracted text is not valid JSON.")
 
 # Close the browser window
 driver.quit()

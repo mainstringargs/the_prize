@@ -141,6 +141,8 @@ def process_csv_files(
                         game_data[game_id]["Goalie "+opp_team+" Other "+team]['Other'][name] = v
     return game_data
 
+def all_same(list):
+    return all(i == list[0] for i in list)
 
 def calculate_correlations(
     game_data,
@@ -169,10 +171,13 @@ def calculate_correlations(
                 return False
 
         return True
+        
+    straight_correlation_count = 0
+    split_correlation_count = 0
 
     for game_id in game_data:
 
-
+        correlations = [];
 
         for event in game_data[game_id]:
         
@@ -224,6 +229,7 @@ def calculate_correlations(
                     or (all_under_match and pass_result == "Under")
                     or (pass_result == "Push" and push_as_match)
                 ):
+                    correlations.append(pass_result)
                     raw_match_count = raw_match_count + 1
                     team_raw_match = team_raw_match + 1
                     direction = None
@@ -252,6 +258,13 @@ def calculate_correlations(
                 if game_id not in team_correlations:
                     team_correlations[game_id] = {}
                 team_correlations[game_id][event] = tally
+                
+        if len(correlations) == 2:
+            print("!!DOUBLE CORRELATION", correlations)
+            if all_same(correlations):
+                straight_correlation_count = straight_correlation_count + 1;
+            else:
+                split_correlation_count = split_correlation_count + 1;
 
   #  team_correlations = dict(
   #      sorted(team_correlations.items(), key=lambda x: x[1]["percent"], reverse=True)
@@ -263,11 +276,23 @@ def calculate_correlations(
     all_tally["raw_over_match_count"] = raw_over_match_count
     all_tally["raw_under_match_count"] = raw_under_match_count
     all_tally["raw_total_events"] = raw_total_events
+    all_tally["split_correlation_count"] = split_correlation_count
+    all_tally["straight_correlation_count"] = straight_correlation_count
+    all_tally["num_games"] = len(game_data)
 
     if raw_total_events > 0:
         all_tally["percent"] = round(raw_match_count / raw_total_events, 2)
     else:
         all_tally["percent"] = 0
+        
+    if len(game_data) > 0:
+        all_tally["straight_corr_percent"] = round(straight_correlation_count / len(game_data), 2)
+        all_tally["split_corr_percent"] = round(split_correlation_count / len(game_data), 2)
+        all_tally["total_corr_percent"] = round((split_correlation_count + straight_correlation_count) / len(game_data), 2)
+    else:
+        all_tally["straight_corr_percent"] = 0
+        all_tally["split_corr_percent"] = 0
+        all_tally["total_corr_percent"] = 0
     
     team_correlations['All']={}
     team_correlations['All']['All'] = all_tally
@@ -280,7 +305,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--goalie_prop", type=str, default="Goalie Saves", help="Goalie Prop")
     parser.add_argument(
-        "--other_prop", type=str, default="Shots On Target", help="Other Prop"
+        "--other_prop", type=str, default="Shots", help="Other Prop"
     )
     parser.add_argument("--num_other", type=int, default=1, help="Num Other")
     parser.add_argument(
