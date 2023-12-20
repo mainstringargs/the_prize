@@ -10,6 +10,16 @@ formatted_date = today.strftime("%Y-%m-%d")
 # Specify the directory path you want to create
 pp_result_data_path = 'normalized_props'
 
+def remove_name_extension(name):
+    """
+    Remove specific name extensions from a given name.
+    """
+    suffixes_to_remove = ["Jr.", "Sr.", "II", "III", "IV", "Ph.D."]  # Add more suffixes if needed
+    cleaned_name = name.replace("'","").replace("-","")
+    for suffix in suffixes_to_remove:
+        cleaned_name = cleaned_name.replace(suffix, "").strip()
+    return cleaned_name
+
 def find_newest_file_from_day(directory_path, specific_day, prefix):
     """
     Find the newest file in the specified directory based on a specific day and prefix.
@@ -52,7 +62,7 @@ def convert_dataframe_to_dict(name_column, dataframe):
     """
     result_dict = {}
     for index, row in dataframe.iterrows():
-        name = row[name_column]
+        name = remove_name_extension(row[name_column])
         row_dict = row.to_dict()
         if name not in result_dict:
             result_dict[name] = []
