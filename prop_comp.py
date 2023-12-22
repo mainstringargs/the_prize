@@ -520,9 +520,13 @@ for sport, sport_diffs in ud_dkp6_prop_diffs.items():
     # Save the filtered dataframe to a CSV file
     sport_df.to_csv(sport_output_csv_path, index=False)
 
-    print(f'Differences for {sport} saved to {sport_output_csv_path}')
-    
-    formatted_stamp = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
+    if len(sport_df) > 0:
+        print(f'Differences for {sport} saved to {sport_output_csv_path}', flush=True)
+        
+        formatted_stamp = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
 
-    # Optionally, you can also write this filtered dataframe to a separate sheet in a Google Spreadsheet
-    sheets.write_to_spreadsheet(sport_output_csv_path, "Prop Differencer", f'{sport} Differences (UD,DKP6)', add_column_name="Updated", add_column_data=formatted_stamp, index=0, overwrite=True, append=False)
+        # Optionally, you can also write this filtered dataframe to a separate sheet in a Google Spreadsheet
+        sheets.write_to_spreadsheet(sport_output_csv_path, "Prop Differencer", f'{sport} Differences (UD,DKP6)', add_column_name="Updated", add_column_data=formatted_stamp, index=0, overwrite=True, append=False)
+    
+    print(f'Differences for {sport} saved to sheets', flush=True)
+print(f'Script done', flush=True)

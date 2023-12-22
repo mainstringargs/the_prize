@@ -87,7 +87,7 @@ json_info = json.loads(f_data.decode('utf-8'))
 csv_file_name = f"normalized_props/sleeper_props_{formatted_date}.csv"
 
 # Define the CSV headers
-csv_headers = ["sport","game_id","game_status","line_type","outcome_type","wager_type","season_type","subject_type","subject_id","popularity","first_name","last_name","position","team","payout_multiplier","line","prop","outcome"]
+csv_headers = ["sport","game_id","game_status","line_type","outcome_type","wager_type","season_type","subject_type","subject_id","popularity","first_name","last_name","full_name","position","team","line","prop","over_multiplier","under_multiplier"]
 
 sports = set()
 
@@ -122,12 +122,21 @@ with open(csv_file_name, 'w', newline='', encoding='utf-8') as csvfile:
             position = player_info['position']
             team = player_info['team']
             
+            over_mult = None;
+            under_mult = None;
+            line = None;
+            prop = None;
             for option in line_data['options']:
                 payout_multiplier = option['payout_multiplier']
                 line = option['outcome_value']
                 prop = option['market_type']
                 outcome = option['outcome']
-                rows_to_sort.append([sport,game_id,game_status,line_type,outcome_type,wager_type,season_type,subject_type,subject_id,popularity,first_name,last_name,position,team,payout_multiplier, line, prop, outcome])
+                if outcome == "over":
+                    over_mult = payout_multiplier
+                elif outcome == "under":
+                    under_mult = payout_multiplier
+            
+            rows_to_sort.append([sport,game_id,game_status,line_type,outcome_type,wager_type,season_type,subject_type,subject_id,popularity,first_name,last_name,(first_name+" "+last_name),position,team,line, prop, over_mult, under_mult])
               
     # Sort the rows by 'sport', 'first_name', and 'last_name'
     sorted_rows = sorted(rows_to_sort, key=lambda x: (x[0], x[10], x[11]))

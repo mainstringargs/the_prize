@@ -26,7 +26,7 @@ def run_ftn_resulter_nba():
     subprocess.run(["python", "ftn_resulter.py","--league","NBA"])    
     
 def prop_comp_driver():
-    subprocess.run(["python", "prop_comp_driver.py"])     
+    subprocess.run(["python", "prop_comp_combined_driver.py"])     
 
 # Schedule the script to run at 7:00 am, 12:55 pm, and 11:00 pm
 #schedule.every().day.at("07:00").do(run_get_props_json)
