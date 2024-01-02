@@ -1,24 +1,8 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import json
-import time
-import os
-import subprocess
-import csv
-import fnmatch
 import datetime
-import time
-import random
+import json
+import os
 import csv
-import pandas as pd
-import argparse
-import base64
-import pandas as pd
-import csv
-
 
 today = datetime.datetime.now()
 formatted_date = today.strftime("%Y-%m-%d")
@@ -149,4 +133,6 @@ print(f"CSV file '{csv_file_name}' created.")
 
 print("Cleaning up",player_data_file)
 print("Cleaning up",lines_data_file)
-#os.remove(newest_file)
+os.remove(player_data_file)
+os.remove(lines_data_file)
+

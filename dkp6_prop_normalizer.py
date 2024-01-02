@@ -1,24 +1,8 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import json
-import time
-import os
-import subprocess
-import csv
-import fnmatch
 import datetime
-import time
-import random
+import json
 import csv
-import pandas as pd
-import argparse
-import base64
-import pandas as pd
-import csv
-
+import os
 
 today = datetime.datetime.now()
 formatted_date = today.strftime("%Y-%m-%d")
@@ -85,6 +69,9 @@ for league in leagues:
         f_data = f.read()
 
     json_info = json.loads(f_data.decode('utf-8'))
+
+    print("Cleaning up", newest_file)
+    os.remove(newest_file)
 
     comp_map = {}
     competitions = json_info.get('competitions')
@@ -164,5 +151,3 @@ with open(csv_file_name, 'w', newline='') as csvfile:
     # Write rows
     csv_writer.writerows(csv_rows)
 
-#print("Cleaning up", newest_file)
-#os.remove(newest_file)

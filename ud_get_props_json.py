@@ -15,7 +15,7 @@ chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(options=chrome_options)
 
 # Specify the directory path you want to create
-directory_path = 'pp_data'
+directory_path = 'ud_data'
 
 # Check if the directory already exists
 if not os.path.exists(directory_path):
