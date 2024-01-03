@@ -109,8 +109,8 @@ if __name__ == "__main__":
     # Load data
     df = pd.read_csv(file_path, encoding=chardet_encoding)
 
-    df = df[(df['league'] == 'NBA')]
-    df = df[(df['prop'] == 'Points')]
+    df = df[(df['league'] == 'NHL')]
+    df = df[(df['prop'] == 'Hits')]
 
     unique_teams = df['team'].unique()
 
@@ -123,8 +123,12 @@ if __name__ == "__main__":
         if len(team_df['name'].unique()) >= 2:
             team_correlations = calculate_correlation(team_df)
             max_correlation = max(team_correlations.values(), default=None)
-            team_correlations_list.append((team, max_correlation))
+            if max_correlation:
+                team_correlations_list.append((team, max_correlation))
 
+    
+
+    print('team_correlations_list len',len(team_correlations_list))
     # Sort teams by their highest correlation values (highest to lowest)
     sorted_teams = sorted(team_correlations_list, key=lambda x: x[1], reverse=False)
 
@@ -140,7 +144,7 @@ if __name__ == "__main__":
         team_correlations[team] = correlations
 
     all_correlations.sort(key=lambda a: a[1])
-    min_corrs = 8
+    min_corrs = 7
     for corr in all_correlations:
         if len(corr[2]) >= min_corrs:
             print("==========>")
