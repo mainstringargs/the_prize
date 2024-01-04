@@ -7,9 +7,12 @@ import traceback
 # authorization
 gc = pygsheets.authorize(service_file='creds.json')
 
-def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_name=None, add_column_data=None, index=1, overwrite=False, append=False):
-    print("file_name", file_name, "spreadsheet_name", spreadsheet_name, "sheet_name", sheet_name, "index", index, flush=True)
-    
+
+def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_name=None, add_column_data=None, index=1,
+                         overwrite=False, append=False):
+    print("file_name", file_name, "spreadsheet_name", spreadsheet_name, "sheet_name", sheet_name, "index", index,
+          flush=True)
+
     try:
         # Detect the encoding of the file
         with open(file_name, 'rb') as f:
@@ -25,13 +28,12 @@ def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_nam
         if 'Unnamed: 0' in data_frame:
             data_frame = data_frame.drop(columns=['Unnamed: 0'])
         data_frame = data_frame.dropna(how='all')
-        
+
         if 'Hit' in data_frame:
             first_column = data_frame.pop('Hit')
             data_frame.insert(0, 'Hit', first_column)
         if add_column_name and add_column_data:
             data_frame.insert(0, add_column_name, add_column_data)
-
 
         sh = gc.open(spreadsheet_name)
 
@@ -48,10 +50,12 @@ def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_nam
                 if existing_sheet.rows == 0:
                     # If the sheet is empty, include the header
                     updated_data_frame = pd.concat([existing_data_frame, data_frame], ignore_index=True)
-                    existing_sheet.set_dataframe(updated_data_frame, start=(1, 1), nan="", extend=True, copy_index=False, copy_head=False)
+                    existing_sheet.set_dataframe(updated_data_frame, start=(1, 1), nan="", extend=True,
+                                                 copy_index=False, copy_head=False)
                 else:
                     # If the sheet already has data, do not include the header
-                    existing_sheet.set_dataframe(data_frame, start=(existing_sheet.rows + 1, 1), nan="", extend=True, copy_index=False, copy_head=False)
+                    existing_sheet.set_dataframe(data_frame, start=(existing_sheet.rows + 1, 1), nan="", extend=True,
+                                                 copy_index=False, copy_head=False)
                 print("Appended data to existing sheet:", sheet_name)
                 return sh, existing_sheet
 
@@ -60,7 +64,8 @@ def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_nam
                 # Clear the data range excluding headers
                 existing_sheet.clear(start=(2, 1), end=(existing_sheet.rows + 1, existing_sheet.cols))
                 # Set the new data
-                existing_sheet.set_dataframe(data_frame, start=(2, 1), nan="", extend=True, copy_index=False, copy_head=False)
+                existing_sheet.set_dataframe(data_frame, start=(2, 1), nan="", extend=True, copy_index=False,
+                                             copy_head=False)
                 print("Overwritten data in existing sheet:", sheet_name)
                 return sh, existing_sheet
 
@@ -79,6 +84,35 @@ def write_to_spreadsheet(file_name, spreadsheet_name, sheet_name, add_column_nam
         print(f"An error occurred: {e}")
         traceback.print_exc()
 
+
+def load_google_sheet_into_dataframe(spreadsheet_title, worksheet_title_or_index=1):
+    """
+    Load data from a Google Sheets document into a Pandas DataFrame.
+
+    Parameters:
+    - credentials_path (str): Path to the Google Sheets API credentials file.
+    - spreadsheet_title (str): Title of the Google Spreadsheet.
+    - worksheet_title_or_index (str or int, optional): Title or index of the worksheet to load data from (default is 1).
+
+    Returns:
+    - pd.DataFrame: Pandas DataFrame containing the data from the specified Google Sheet.
+    """
+    # Open the Google Spreadsheet using its title
+    spreadsheet = gc.open(spreadsheet_title)
+
+    # Select the desired worksheet by title or index
+    worksheet = spreadsheet.sheet1 if isinstance(worksheet_title_or_index, int) else spreadsheet.worksheet_by_title(
+        worksheet_title_or_index)
+
+    # Get all values from the worksheet
+    values = worksheet.get_all_values()
+
+    # Convert the values to a Pandas DataFrame
+    df = pd.DataFrame(values[1:], columns=values[0])
+
+    return df
+
+
 def main():
     parser = argparse.ArgumentParser(description='Write CSV file to Google Spreadsheet')
     parser.add_argument('--file_name', help='CSV file to be written to the spreadsheet')
@@ -91,7 +125,9 @@ def main():
     parser.add_argument('--append', action='store_true', help='Append data to existing sheet')
 
     args = parser.parse_args()
-    write_to_spreadsheet(args.file_name, args.spreadsheet_name, args.sheet_name, args.add_column_name, args.add_column_data, args.index, args.overwrite, args.append)
+    write_to_spreadsheet(args.file_name, args.spreadsheet_name, args.sheet_name, args.add_column_name,
+                         args.add_column_data, args.index, args.overwrite, args.append)
+
 
 if __name__ == '__main__':
     main()
