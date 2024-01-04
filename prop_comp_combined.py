@@ -4,12 +4,34 @@ import pandas as pd
 import sheets
 import pytz
 from operator import itemgetter
+import json
 
 today = datetime.datetime.now()
 formatted_date = today.strftime("%Y-%m-%d")
 
 # Specify the directory path you want to create
 pp_result_data_path = 'normalized_props'
+
+
+def load_same_prop_correlation_scorecard_from_json():
+    today_date = datetime.datetime.now().strftime('%Y%m%d')
+    json_file_path = f'normalized_props/same_prop_correlation_scorecard_{today_date}.json'
+    try:
+        # Load the JSON file
+        with open(json_file_path, 'r') as jsonfile:
+            loaded_scorecard = json.load(jsonfile)
+
+        return loaded_scorecard
+    except FileNotFoundError:
+        print(f"Error: File '{json_file_path}' not found.")
+        return None
+    except json.JSONDecodeError:
+        print(f"Error: Unable to decode JSON from file '{json_file_path}'.")
+        return None
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
 
 def find_newest_file_from_day(directory_path, specific_day, prefix):
     """
@@ -40,15 +62,17 @@ def find_newest_file_from_day(directory_path, specific_day, prefix):
 
     return newest_file
 
+
 def remove_name_extension(name):
     """
     Remove specific name extensions from a given name.
     """
     suffixes_to_remove = ["Jr.", "Sr.", "II", "III", "IV", "Ph.D."]  # Add more suffixes if needed
-    cleaned_name = name.replace("'","").replace("-","")
+    cleaned_name = name.replace("'", "").replace("-", "")
     for suffix in suffixes_to_remove:
         cleaned_name = cleaned_name.replace(suffix, "").strip()
     return cleaned_name
+
 
 def convert_dataframe_to_dict(name_column, dataframe):
     """
@@ -67,14 +91,13 @@ def convert_dataframe_to_dict(name_column, dataframe):
 
     result_dict = {}
     grouped_data = dataframe.groupby(name_column)
-    
+
     for name, group in grouped_data:
         # Remove specific name extensions from the name
         cleaned_name = remove_name_extension(name)
         result_dict[cleaned_name] = group.to_dict(orient='records')
 
     return result_dict
-
 
 
 print(f"Running for date {formatted_date}.")
@@ -101,93 +124,94 @@ print("sleeper_props_file", sleeper_props_file)
 
 sleeper_properties_dataframe = pd.read_csv(sleeper_props_file, encoding='utf-8') if sleeper_props_file else None
 
-
 # Convert DataFrames to dictionaries
-pp_properties_dict = convert_dataframe_to_dict("display_name",pp_properties_dataframe) if pp_properties_dataframe is not None else None
-ud_properties_dict = convert_dataframe_to_dict("Full Name",ud_properties_dataframe) if ud_properties_dataframe is not None else None
-dkp6_properties_dict = convert_dataframe_to_dict("display_name",dkp6_properties_dataframe) if dkp6_properties_dataframe is not None else None
+pp_properties_dict = convert_dataframe_to_dict("display_name",
+                                               pp_properties_dataframe) if pp_properties_dataframe is not None else None
+ud_properties_dict = convert_dataframe_to_dict("Full Name",
+                                               ud_properties_dataframe) if ud_properties_dataframe is not None else None
+dkp6_properties_dict = convert_dataframe_to_dict("display_name",
+                                                 dkp6_properties_dataframe) if dkp6_properties_dataframe is not None else None
 
-sleeper_properties_dict = convert_dataframe_to_dict("full_name",sleeper_properties_dataframe) if sleeper_properties_dataframe is not None else None
-
+sleeper_properties_dict = convert_dataframe_to_dict("full_name",
+                                                    sleeper_properties_dataframe) if sleeper_properties_dataframe is not None else None
 
 pp_to_ud_props = {}
 pp_to_ud_props['NBA'] = {
     "3-PT Made": "three_points_made",
     "Points": "points",
     "Rebounds": "rebounds",
-    "Pts+Rebs+Asts": "pts_rebs_asts",    
-    "Steals":"steals",
-    "Fantasy Score":"fantasy_points",
-    "Assists":"assists",   
-    "Blks+Stls":"blks_stls",      
-    "Blocked Shots":"blocks",
-    "Pts+Asts":"pts_asts",
-    "Pts+Rebs":"pts_rebs",
-    "Rebs+Asts":"rebs_asts",
-    "Turnovers":"turnovers",    
+    "Pts+Rebs+Asts": "pts_rebs_asts",
+    "Steals": "steals",
+    "Fantasy Score": "fantasy_points",
+    "Assists": "assists",
+    "Blks+Stls": "blks_stls",
+    "Blocked Shots": "blocks",
+    "Pts+Asts": "pts_asts",
+    "Pts+Rebs": "pts_rebs",
+    "Rebs+Asts": "rebs_asts",
+    "Turnovers": "turnovers",
 }
 
 pp_to_ud_props['CBB'] = pp_to_ud_props['NBA']
 
 pp_to_ud_props['NFL'] = {
-    "Fantasy Score":"fantasy_points",
-    "FG Made":"field_goals_made",   
-    "INT":"passing_ints",   
-    "Kicking Points":"kicking_points",  
-    "Pass Attempts":"passing_att",    
-    "Pass Completions":"passing_comps",    
-    "Pass TDs":"passing_tds",       
-    "Pass Yards":"passing_yds",    
-    "Pass+Rush Yds":"passing_and_rushing_yds",   
-    "Punts":"punts",     
-    "Rec Targets":"receiving_tgts",    
-    "Receiving Yards":"receiving_yds",   
-    "Receptions":"receiving_rec",     
-    "Rush Attempts":"rushing_att",     
-    "Rush TDs":"rushing_tds",     
-    "Rush Yards":"rushing_yds",       
-    "Rush+Rec TDs":"rush_rec_tds",    
-    "Rush+Rec Yds":"rush_rec_yds",     
-    "Sacks":"sacks",     
-    "Tackles":"tackles",       
-    "Tackles+Ast":"tackles_and_assists",            
+    "Fantasy Score": "fantasy_points",
+    "FG Made": "field_goals_made",
+    "INT": "passing_ints",
+    "Kicking Points": "kicking_points",
+    "Pass Attempts": "passing_att",
+    "Pass Completions": "passing_comps",
+    "Pass TDs": "passing_tds",
+    "Pass Yards": "passing_yds",
+    "Pass+Rush Yds": "passing_and_rushing_yds",
+    "Punts": "punts",
+    "Rec Targets": "receiving_tgts",
+    "Receiving Yards": "receiving_yds",
+    "Receptions": "receiving_rec",
+    "Rush Attempts": "rushing_att",
+    "Rush TDs": "rushing_tds",
+    "Rush Yards": "rushing_yds",
+    "Rush+Rec TDs": "rush_rec_tds",
+    "Rush+Rec Yds": "rush_rec_yds",
+    "Sacks": "sacks",
+    "Tackles": "tackles",
+    "Tackles+Ast": "tackles_and_assists",
 }
 
 pp_to_ud_props['NHL'] = {
     "Points": "points",
-    "Fantasy Score":"fantasy_points",
-    "Assists":"assists",       
-    "Blocked Shots":"blocked_shots",
-    "Goals":"goals",     
+    "Fantasy Score": "fantasy_points",
+    "Assists": "assists",
+    "Blocked Shots": "blocked_shots",
+    "Goals": "goals",
     "Goalie Saves": "saves",
-    "Shots On Goal":"shots",   
+    "Shots On Goal": "shots",
 }
 
 pp_to_ud_props['CFB'] = pp_to_ud_props['NFL']
-
 
 pp_to_dkp6_props = {}
 pp_to_dkp6_props['NBA'] = {
     "3-PT Made": "3PM",
     "Points": "PTS",
     "Rebounds": "REB",
-    "Pts+Rebs+Asts": "P+A+R",    
-    "Steals":"STL",
-    "Assists":"AST",   
-    "Blocked Shots":"BLK",
+    "Pts+Rebs+Asts": "P+A+R",
+    "Steals": "STL",
+    "Assists": "AST",
+    "Blocked Shots": "BLK",
 }
 
 pp_to_dkp6_props['NFL'] = {
-    "Kicking Points":"KPTS",  
-    "Pass Attempts":"ATT",    
-    "Pass Completions":"COMP",    
-    "Pass TDs":"PaTD",       
-    "Pass Yards":"PaYds",    
-    "Receiving Yards":"RecYds",   
-    "Receptions":"REC",       
-    "Rush Yards":"RuYds",       
-    "Rush+Rec Yds":"Ru+Rec",        
-    "Rush+Rec TDs":"TD"
+    "Kicking Points": "KPTS",
+    "Pass Attempts": "ATT",
+    "Pass Completions": "COMP",
+    "Pass TDs": "PaTD",
+    "Pass Yards": "PaYds",
+    "Receiving Yards": "RecYds",
+    "Receptions": "REC",
+    "Rush Yards": "RuYds",
+    "Rush+Rec Yds": "Ru+Rec",
+    "Rush+Rec TDs": "TD"
 }
 
 pp_to_sleeper_props = {}
@@ -196,51 +220,56 @@ pp_to_sleeper_props['NBA'] = {
     "3-PT Made": "threes_made",
     "Points": "points",
     "Rebounds": "rebounds",
-    "Pts+Rebs+Asts": "pts_reb_ast",    
-    "Steals":"steals",
-    "Assists":"assists",   
-    "Turnovers":"turnovers",  
-    "Blocked Shots":"blocks",
+    "Pts+Rebs+Asts": "pts_reb_ast",
+    "Steals": "steals",
+    "Assists": "assists",
+    "Turnovers": "turnovers",
+    "Blocked Shots": "blocks",
 }
 
 pp_to_sleeper_props['NFL'] = {
-    "Kicking Points":"kicking_points",  
-    "Pass Attempts":"pass_attempts",    
-    "Pass Completions":"pass_completions",    
-    "Pass TDs":"passing_touchdowns",       
-    "Rush TDs":"rushing_touchdowns",    
-    "Pass Yards":"passing_yards",    
-    "Receiving Yards":"receiving_yards",   
-    "Receptions":"receptions",       
-    "Rush Yards":"rushing_yards",       
-    "Rush+Rec Yds":"Ru+Rec",        
-    "Rush+Rec TDs":"TD",
-    "INT":"interceptions", 
-    "Fantasy Score":"fantasy_points",
-    "Rush+Rec Yds":"rushing_and_receiving_yards",       
-    "FG Made":"field_goals_made",  
-    "Rush+Rec TDs":"anytime_touchdowns",      
-    "Pass+Rush Yds":"passing_and_rushing_yds"
+    "Kicking Points": "kicking_points",
+    "Pass Attempts": "pass_attempts",
+    "Pass Completions": "pass_completions",
+    "Pass TDs": "passing_touchdowns",
+    "Rush TDs": "rushing_touchdowns",
+    "Pass Yards": "passing_yards",
+    "Receiving Yards": "receiving_yards",
+    "Receptions": "receptions",
+    "Rush Yards": "rushing_yards",
+    "Rush+Rec Yds": "Ru+Rec",
+    "Rush+Rec TDs": "TD",
+    "INT": "interceptions",
+    "Fantasy Score": "fantasy_points",
+    "Rush+Rec Yds": "rushing_and_receiving_yards",
+    "FG Made": "field_goals_made",
+    "Rush+Rec TDs": "anytime_touchdowns",
+    "Pass+Rush Yds": "passing_and_rushing_yds"
 }
 
 pp_to_ud_props['NHL'] = {
     "Points": "points",
-    "Assists":"assists",       
-    "Blocked Shots":"blocked_shots",
-    "Goals":"goals",     
-    "Shots On Goal":"shots",   
+    "Assists": "assists",
+    "Blocked Shots": "blocked_shots",
+    "Goals": "goals",
+    "Shots On Goal": "shots",
 }
 
 pp_to_sleeper_props['CBB'] = pp_to_sleeper_props['NBA']
 pp_to_sleeper_props['CFB'] = pp_to_sleeper_props['NFL']
 
+
 def invert_dict(mydict):
     return dict(map(reversed, mydict.items()))
+
 
 ud_dkp6_prop_diffs = {}
 ud_pp_prop_diffs = {}
 dkp6_pp_prop_diffs = {}
 sleeper_pp_prop_diffs = {}
+
+same_prop_correlation_scorecard = load_same_prop_correlation_scorecard_from_json()
+
 
 def get_line(pick_dict, site):
     if pick_dict:
@@ -254,7 +283,8 @@ def get_line(pick_dict, site):
             if "prop_line" in pick_dict:
                 return float(pick_dict["prop_line"])
     return None;
-    
+
+
 def get_sport(prop_data):
     for key, value in prop_data.items():
         if key == "pp" and "league" in value:
@@ -264,8 +294,9 @@ def get_sport(prop_data):
         elif key == "dkp6" and "competition_sport" in value:
             return value["competition_sport"].upper().strip()
         elif key == "sl" and "sport" in value:
-            return value["sport"].upper().strip()       
+            return value["sport"].upper().strip()
     return None;
+
 
 def get_team(prop_data):
     for key, value in prop_data.items():
@@ -276,9 +307,10 @@ def get_team(prop_data):
         elif key == "dkp6" and "team_abbr" in value:
             return value["team_abbr"].upper().strip()
         elif key == "sl" and "team" in value:
-            return value["team"].upper().strip()       
+            return value["team"].upper().strip()
     return None;
-    
+
+
 def get_name(prop_data):
     for key, value in prop_data.items():
         if key == "pp" and "display_name" in value:
@@ -288,8 +320,9 @@ def get_name(prop_data):
         elif key == "dkp6" and "display_name" in value:
             return value["display_name"].strip()
         elif key == "sl" and "full_name" in value:
-            return value["full_name"].strip()       
+            return value["full_name"].strip()
     return None;
+
 
 def get_position(prop_data):
     for key, value in prop_data.items():
@@ -300,33 +333,38 @@ def get_position(prop_data):
         elif key == "dkp6" and "position_name" in value:
             return value["position_name"].upper().strip()
         elif key == "sl" and "position" in value:
-            return value["position"].upper().strip()       
+            return value["position"].upper().strip()
     return None;
-    
+
+
 def get_pp_line(prop_data):
     for key, value in prop_data.items():
         if key == "pp" and "line_score" in value:
             return float(value["line_score"])
     return None;
-    
+
+
 def get_ud_line(prop_data):
     for key, value in prop_data.items():
         if key == "ud" and "Stat Value" in value:
             return float(value["Stat Value"])
     return None;
-    
+
+
 def get_dkp6_line(prop_data):
     for key, value in prop_data.items():
         if key == "dkp6" and "prop_line" in value:
             return float(value["prop_line"])
     return None;
 
+
 def get_sleeper_line(prop_data):
     for key, value in prop_data.items():
         if key == "sl" and "line" in value:
             return float(value["line"])
     return None;
-    
+
+
 def get_line(prop_data, source):
     if source == "pp":
         return get_pp_line(prop_data)
@@ -335,33 +373,36 @@ def get_line(prop_data, source):
     if source == "dkp6":
         return get_dkp6_line(prop_data)
     if source == "sl":
-        return get_sleeper_line(prop_data)        
+        return get_sleeper_line(prop_data)
     return None;
-    
-    
+
+
 def get_sleeper_over_odds(prop_data):
     for key, value in prop_data.items():
         if key == "sl" and "over_multiplier" in value:
             return float(value["over_multiplier"])
     return None;
-    
+
+
 def get_sleeper_under_odds(prop_data):
     for key, value in prop_data.items():
         if key == "sl" and "under_multiplier" in value:
             return float(value["under_multiplier"])
     return None;
 
+
 def get_sleeper_sleeper_popularity(prop_data):
     for key, value in prop_data.items():
         if key == "sl" and "popularity" in value:
             return float(value["popularity"])
     return None;
-    
+
+
 def get_high_line_source(prop_data):
     curr_high = 0.0;
     high_source = None;
     lines = set()
-    
+
     for key, value in prop_data.items():
         if key == "dkp6":
             line = get_dkp6_line(prop_data);
@@ -369,39 +410,40 @@ def get_high_line_source(prop_data):
             if line > curr_high:
                 curr_high = line
                 high_source = "dkp6"
-              #  print(key,line)
+            #  print(key,line)
         elif key == "pp":
             line = get_pp_line(prop_data);
             lines.add(line)
             if line > curr_high:
                 curr_high = line
                 high_source = "pp"
-               # print(key,line)
+            # print(key,line)
         elif key == "ud":
             line = get_ud_line(prop_data);
             lines.add(line)
             if line > curr_high:
                 curr_high = line
                 high_source = "ud"
-              #  print(key,line)
-        elif key == "sl":    
+            #  print(key,line)
+        elif key == "sl":
             line = get_sleeper_line(prop_data);
             lines.add(line)
             if line > curr_high:
                 curr_high = line
-                high_source = "sl" 
-             #   print(key,line)                
+                high_source = "sl"
+                #   print(key,line)
     if len(lines) == 1:
-       #print("all equals, no high")
+        # print("all equals, no high")
         return None
-        
+
     return high_source;
-    
+
+
 def get_low_line_source(prop_data):
     curr_low = 99999999999;
     low_source = None;
     lines = set()
-    
+
     for key, value in prop_data.items():
         if key == "dkp6":
             line = get_dkp6_line(prop_data);
@@ -421,27 +463,29 @@ def get_low_line_source(prop_data):
             if line < curr_low:
                 curr_low = line
                 low_source = "ud"
-        elif key == "sl":    
+        elif key == "sl":
             line = get_sleeper_line(prop_data);
             lines.add(line)
             if line < curr_low:
                 curr_low = line
-                low_source = "sl"  
+                low_source = "sl"
     if len(lines) == 1:
-       # print("all equals, no low")
+        # print("all equals, no low")
         return None
-        
+
     return low_source;
-    
+
+
 def get_high_low_line_diff(prop_data, low_source, high_source):
     low_line = get_line(prop_data, low_source)
     high_line = get_line(prop_data, high_source)
     return (high_line - low_line);
-    
-def get_start_time(prop_data):    
+
+
+def get_start_time(prop_data):
     for key, value in prop_data.items():
         if key == "pp" and "start_time" in value:
-            start_time = datetime.datetime.fromisoformat(value['start_time'])            
+            start_time = datetime.datetime.fromisoformat(value['start_time'])
             start_time = start_time.astimezone(central_tz)
             return start_time;
         elif key == "ud" and "Scheduled Time" in value:
@@ -452,15 +496,16 @@ def get_start_time(prop_data):
             start_time = start_time.replace(tzinfo=pytz.utc).astimezone(central_tz)
             return start_time;
         elif key == "dkp6" and "competition_start_time" in value:
-            start_time = datetime.datetime.fromisoformat(value['competition_start_time'][:26])            
+            start_time = datetime.datetime.fromisoformat(value['competition_start_time'][:26])
             start_time = start_time.astimezone(central_tz)
             return start_time;
     return None;
 
+
 # Accumulate data in a list
 analysis_results = []
 
-supported_sports = ["NFL","NHL","MLB","CFB","CBB","NBA"]
+supported_sports = ["NFL", "NHL", "MLB", "CFB", "CBB", "NBA"]
 central_tz = pytz.timezone('America/Chicago')  # Change 'America/Chicago' to the appropriate time zone
 for name in pp_properties_dict:
     pp = pp_properties_dict[name]
@@ -471,22 +516,22 @@ for name in pp_properties_dict:
     if name in ud_properties_dict:
         ud = ud_properties_dict[name]
     if name in dkp6_properties_dict:
-        dkp6 = dkp6_properties_dict[name]   
+        dkp6 = dkp6_properties_dict[name]
     if name in sleeper_properties_dict:
-        sleeper = sleeper_properties_dict[name]         
-         
+        sleeper = sleeper_properties_dict[name]
+
     pp_props_for_player = {}
     ud_props_for_player = {}
     dkp6_props_for_player = {}
-    sleeper_props_for_player = {}    
-    
+    sleeper_props_for_player = {}
+
     pp_props_set = set()
 
-    if pp:    
+    if pp:
         for p in pp:
             pp_props_for_player[p['stat_type']] = p
             pp_props_set.add(p['stat_type'])
-    
+
     if ud:
         for u in ud:
             key = u['Prop Name']
@@ -495,7 +540,7 @@ for name in pp_properties_dict:
                 inverted = invert_dict(pp_to_ud_props[sport])
                 if key in inverted:
                     pp_key = inverted[key]
-                    ud_props_for_player[pp_key] = u  
+                    ud_props_for_player[pp_key] = u
                     pp_props_set.add(pp_key)
     if dkp6:
         for d in dkp6:
@@ -505,9 +550,9 @@ for name in pp_properties_dict:
                 inverted = invert_dict(pp_to_dkp6_props[sport])
                 if key in inverted:
                     pp_key = inverted[key]
-                    dkp6_props_for_player[pp_key] = d 
+                    dkp6_props_for_player[pp_key] = d
                     pp_props_set.add(pp_key)
-                    
+
     if sleeper:
         for d in sleeper:
             key = d['wager_type']
@@ -516,19 +561,18 @@ for name in pp_properties_dict:
                 inverted = invert_dict(pp_to_sleeper_props[sport])
                 if key in inverted:
                     pp_key = inverted[key]
-                    sleeper_props_for_player[pp_key] = d 
+                    sleeper_props_for_player[pp_key] = d
                     pp_props_set.add(pp_key)
-                    
+
     for pp_prop in pp_props_set:
-        
+
         pp_prop_data = None;
         ud_prop_data = None;
         dkp6_prop_data = None;
         sleeper_prop_data = None;
-        
+
         prop_data = {}
-        
-        
+
         if pp_prop in pp_props_for_player:
             pp_prop_data = pp_props_for_player[pp_prop]
             if pp_prop_data:
@@ -546,50 +590,114 @@ for name in pp_properties_dict:
         if pp_prop in sleeper_props_for_player:
             sleeper_prop_data = sleeper_props_for_player[pp_prop]
             if sleeper_prop_data:
-                prop_data['sl'] = sleeper_prop_data        
+                prop_data['sl'] = sleeper_prop_data
 
-        if len(prop_data)>1:
-#updated | sport | team | name | prop | PP line | UD line | DKP6 line | Sleeper line | Sleeper oOdds | Sleeper uOdds | start time
+        if len(prop_data) > 1:
+            # updated | sport | team | name | prop | PP line | UD line | DKP6 line | Sleeper line | Sleeper oOdds | Sleeper uOdds | start time
 
             sport = get_sport(prop_data)
             if sport in supported_sports:
                 high_line_source = get_high_line_source(prop_data)
                 low_line_source = get_low_line_source(prop_data)
 
-                #if high_line_source and low_line_source and high_line_source!=low_line_source:
+                # if high_line_source and low_line_source and high_line_source!=low_line_source:
                 team = get_team(prop_data)
                 name = get_name(prop_data)
                 position = get_position(prop_data)
-                prop =  pp_prop
-                pp_line =  get_pp_line(prop_data)
+                prop = pp_prop
+                pp_line = get_pp_line(prop_data)
                 ud_line = get_ud_line(prop_data)
                 dkp6_line = get_dkp6_line(prop_data)
                 sleeper_line = get_sleeper_line(prop_data)
                 sleeper_over_odds = get_sleeper_over_odds(prop_data)
                 sleeper_under_odds = get_sleeper_under_odds(prop_data)
                 sleeper_popularity = get_sleeper_sleeper_popularity(prop_data)
-                
+
                 if sleeper_over_odds:
-                    sleeper_over_odds = round(sleeper_over_odds,3)
+                    sleeper_over_odds = round(sleeper_over_odds, 3)
                 if sleeper_under_odds:
-                    sleeper_under_odds = round(sleeper_under_odds,3)
+                    sleeper_under_odds = round(sleeper_under_odds, 3)
                 if sleeper_popularity:
-                    sleeper_popularity = round(sleeper_popularity,3)                
-                
+                    sleeper_popularity = round(sleeper_popularity, 3)
+
                 if sleeper_over_odds and sleeper_under_odds:
-                    sleeper_over = (1.0/sleeper_over_odds) * 100.0
-                    sleeper_under = (1.0/sleeper_under_odds) * 100.0
+                    sleeper_over = (1.0 / sleeper_over_odds) * 100.0
+                    sleeper_under = (1.0 / sleeper_under_odds) * 100.0
                     sleeper_hold = sleeper_over + sleeper_under
-                    sleeper_over_odds = round(sleeper_over / sleeper_hold,3)
-                    sleeper_under_odds = round(sleeper_under / sleeper_hold,3)
-                    
+                    sleeper_over_odds = round(sleeper_over / sleeper_hold, 3)
+                    sleeper_under_odds = round(sleeper_under / sleeper_hold, 3)
+
                 start_time = get_start_time(prop_data)
                 high_low_line_diff = None;
                 if low_line_source and high_line_source:
-                    high_low_line_diff = round(get_high_low_line_diff(prop_data,low_line_source,high_line_source),3)
-                    print("high_low_line_diff",high_low_line_diff)
-                
-                print("sport",sport,"team",team,"name",name,"position",position,"prop",prop,"pp_line",pp_line,"ud_line",ud_line,"dkp6_line",dkp6_line,"sleeper_line",sleeper_line,"sleeper_over_odds",sleeper_over_odds,"sleeper_under_odds",sleeper_under_odds,"sleeper_popularity",sleeper_popularity,"low_line_source",low_line_source,"high_line_source",high_line_source,"high_low_line_diff",high_low_line_diff,"start_time",start_time)
+                    high_low_line_diff = round(get_high_low_line_diff(prop_data, low_line_source, high_line_source), 3)
+                    print("high_low_line_diff", high_low_line_diff)
+
+                print("sport", sport, "team", team, "name", name, "position", position, "prop", prop, "pp_line",
+                      pp_line, "ud_line", ud_line, "dkp6_line", dkp6_line, "sleeper_line", sleeper_line,
+                      "sleeper_over_odds", sleeper_over_odds, "sleeper_under_odds", sleeper_under_odds,
+                      "sleeper_popularity", sleeper_popularity, "low_line_source", low_line_source, "high_line_source",
+                      high_line_source, "high_low_line_diff", high_low_line_diff, "start_time", start_time)
+
+                max_correlated_player = ""
+                max_correlation = ""
+                max_total_events_together = ""
+                max_total_events_together_overs = ""
+                max_total_events_together_unders = ""
+                max_raw_corr_percent = ""
+                max_raw_corr_percent_overs = ""
+                max_raw_corr_percent_unders = ""
+
+                min_correlated_player = ""
+                min_correlation = ""
+                min_total_events_together = ""
+                min_total_events_together_noncorr = ""
+                min_raw_noncorr_percent = ""
+
+                if same_prop_correlation_scorecard is not None and sport in same_prop_correlation_scorecard['positive']:
+                    if prop in same_prop_correlation_scorecard['positive'][sport]:
+                        if name in same_prop_correlation_scorecard['positive'][sport][prop]:
+                            corr_props = same_prop_correlation_scorecard['positive'][sport][prop][name]
+                            for key, value in corr_props.items():
+                                max_correlation_pair = value['max_correlation_pair']
+                                if name in max_correlation_pair and key in max_correlation_pair:
+                                    max_correlated_player = key
+                                    max_correlation = round(float(value['max_correlation']), 2)
+                                    max_total_events_together = len(value['max_events_together'])
+                                    if max_correlation > .3 and max_total_events_together > 5:
+                                        max_total_events_together = len(value['max_events_together'])
+                                        max_total_events_together_overs = len(value['max_events_together_overs'])
+                                        max_total_events_together_unders = len(value['max_events_together_unders'])
+                                        max_raw_corr_percent = round(float(value['raw_corr_percent']), 2)
+                                        max_raw_corr_percent_overs = round(float(value['raw_corr_over_percent']), 2)
+                                        max_raw_corr_percent_unders = round(float(value['raw_corr_under_percent']), 2)
+                                    else:
+                                        max_correlated_player = ""
+                                        max_correlation = ""
+                                        max_total_events_together = ""
+
+                if same_prop_correlation_scorecard is not None and sport in same_prop_correlation_scorecard['negative']:
+                    if prop in same_prop_correlation_scorecard['negative'][sport]:
+                        if name in same_prop_correlation_scorecard['negative'][sport][prop]:
+                            corr_props = same_prop_correlation_scorecard['negative'][sport][prop][name]
+                            for key, value in corr_props.items():
+                                min_correlation_pair = value['min_correlation_pair']
+                                if name in min_correlation_pair and key in min_correlation_pair:
+                                    min_correlated_player = key
+                                    min_correlation = round(float(value['min_correlation']), 2)
+                                    min_total_events_together = len(value['min_events_together'])
+                                    if min_correlation < -.3 and min_total_events_together > 5:
+                                        min_total_events_together = len(value['min_events_together'])
+                                        min_total_events_together_overs = len(value['min_events_together_overs'])
+                                        min_total_events_together_unders = len(value['min_events_together_unders'])
+                                        min_total_events_together_noncorr = min_total_events_together - (
+                                                min_total_events_together_overs + min_total_events_together_unders)
+                                        min_raw_noncorr_percent = round(
+                                            min_total_events_together_noncorr / min_total_events_together, 2)
+                                    else:
+                                        min_correlated_player = ""
+                                        min_correlation = ""
+                                        min_total_events_together = ""
 
                 # Append data to the list
                 analysis_results.append({
@@ -609,13 +717,27 @@ for name in pp_properties_dict:
                     "High Line Source": high_line_source,
                     "Line Difference": high_low_line_diff,
                     "Start Time": start_time,
+                    "High Pos Corr (Same Prop)": max_correlated_player,
+                    "Pos Coef": max_correlation,
+                    "Pos Common Events": max_total_events_together,
+                    "Pos Common Overs": max_total_events_together_overs,
+                    "Pos Common Unders": max_total_events_together_unders,
+                    "Pos Corr %": max_raw_corr_percent,
+                    "Pos Corr Overs %": max_raw_corr_percent_overs,
+                    "Pos Corr Unders %": max_raw_corr_percent_unders,
+                    "High Neg Corr (Same Prop)": min_correlated_player,
+                    "Neg Coef": min_correlation,
+                    "Neg Common Events": min_total_events_together,
+                    "Neg Common Splits": min_total_events_together_noncorr,
+                    "Neg Corr %": min_raw_noncorr_percent
                 })
 
 # Sort the list by "Sport", "Position", and "Name"
 analysis_results = sorted(analysis_results, key=itemgetter("Sport", "Position", "Name"))
 
 # Then, sort by "Line_Difference" in descending order
-analysis_results = sorted(analysis_results, key=lambda x: x.get("Line Difference", float('-inf')) if x.get("Line Difference") is not None else float('-inf'), reverse=True)
+analysis_results = sorted(analysis_results, key=lambda x: x.get("Line Difference", float('-inf')) if x.get(
+    "Line Difference") is not None else float('-inf'), reverse=True)
 
 formatted_stamp = datetime.datetime.now().strftime("%Y%m%d")
 
@@ -628,7 +750,8 @@ df.columns = [col.strip() for col in df.columns]  # Capitalize first letter and 
 df.to_csv(csv_file_path, index=False)
 
 print(f"Analysis results written to {csv_file_path}")
-formatted_stamp = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
-            
+# formatted_stamp = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
+
 # Optionally, you can also write this filtered dataframe to a separate sheet in a Google Spreadsheet
-sheets.write_to_spreadsheet(csv_file_path, "Prop Differencer", f'Difference Report', add_column_name="Updated", add_column_data=formatted_stamp, index=0, overwrite=True, append=False)
+# sheets.write_to_spreadsheet(csv_file_path, "Prop Differencer", f'Difference Report', add_column_name="Updated",
+#                            add_column_data=formatted_stamp, index=0, overwrite=True, append=False)

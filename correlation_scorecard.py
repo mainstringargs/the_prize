@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 import chardet
 import numpy as np
@@ -129,7 +130,7 @@ def get_same_prop_correlations(team_name, correlations, team_df):
     return result_dict
 
 
-def get_same_prop_correlation_scorecard():
+def get_same_prop_correlation_scorecard(min_corrs=6):
     # file_path = "pp_results.csv"  # Replace with the actual path to your CSV file
     #
     # with open(file_path, 'rb') as f:
@@ -146,6 +147,8 @@ def get_same_prop_correlation_scorecard():
     league_prop_pairs = sheets_df[['league', 'prop']].drop_duplicates().to_records(index=False).tolist()
     # Print the list of distinct pairs
     print("league_prop_pairs", league_prop_pairs)
+
+    # league_prop_pairs = [("CFB","Receiving Yards")]
 
     correlation_scorecard = {"positive": {}, "negative": {}}
 
@@ -193,7 +196,7 @@ def get_same_prop_correlation_scorecard():
             team_correlations[team] = correlations
 
         all_correlations.sort(key=lambda a: a['max_correlation'])
-        min_corrs = 6
+
         for corr in all_correlations:
             if len(corr['max_events_together']) >= min_corrs:
 
@@ -217,11 +220,9 @@ def get_same_prop_correlation_scorecard():
                 print("Corr Down Events", (corr['max_events_together_unders']))
 
         all_correlations.sort(key=lambda a: a['min_correlation'], reverse=True)
-        min_corrs = 6
         for corr in all_correlations:
             if len(corr['min_events_together']) >= min_corrs:
-                player_pair = [part.strip() for part in corr['max_correlation_pair'].split('&')]
-
+                player_pair = [part.strip() for part in corr['min_correlation_pair'].split('&')]
                 if player_pair[0] not in correlation_scorecard["negative"][league][prop]:
                     correlation_scorecard["negative"][league][prop][player_pair[0]] = {}
                 if player_pair[1] not in correlation_scorecard["negative"][league][prop]:
@@ -245,7 +246,9 @@ def get_same_prop_correlation_scorecard():
 if __name__ == "__main__":
     scorecord = get_same_prop_correlation_scorecard()
 
-    json_file_path = 'output.json'
+    # Generate the file name with today's date
+    today_date = datetime.now().strftime('%Y%m%d')
+    json_file_path = f'normalized_props/same_prop_correlation_scorecard_{today_date}.json'
 
     # Write the dictionary to the JSON file
     with open(json_file_path, 'w') as jsonfile:
