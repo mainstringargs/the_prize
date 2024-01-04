@@ -1,1 +1,0 @@
-start "" "%ProgramFiles%\Git\git-bash.exe" -c "python grab_pp_data.py && /usr/bin/bash --login -i"
