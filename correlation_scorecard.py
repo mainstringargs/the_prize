@@ -81,22 +81,7 @@ def get_correlations(team_name, correlations, team_df):
         max_correlation_pair, max_correlation, max_events_together, max_events_together_overs,
         max_events_together_unders,
         min_correlation_pair, min_correlation, min_events_together, min_events_together_overs,
-        min_events_together_unders)
-
-    # Check the condition before printing
-
-
-# if len(max_events_together) >= min_events:
-#    print(f"Highest correlation: {max_correlation_pair} - Correlation: {max_correlation:.2f}")
-#   print(f"Events together for highest correlation: {len(max_events_together)} {max_events_together}")
-#  print(f"Events together for highest correlation (Overs): {len(max_events_together_overs)} {max_events_together_overs}")
-# print(f"Events together for highest correlation (Unders): {len(max_events_together_unders)} {max_events_together_unders}")
-
-# if len(min_events_together) >= min_events:
-#   print(f"Lowest correlation: {min_correlation_pair} - Correlation: {min_correlation:.2f}")
-#  print(f"Events together for lowest correlation: {len(min_events_together)} {min_events_together}")
-# print(f"Events together for lowest correlation (Overs): {len(min_events_together_overs)} {min_events_together_overs}")
-# print(f"Events together for lowest correlation (Unders): {len(min_events_together_unders)} {min_events_together_unders}")
+        min_events_together_unders, team_name)
 
 
 if __name__ == "__main__":
@@ -109,8 +94,8 @@ if __name__ == "__main__":
     # Load data
     df = pd.read_csv(file_path, encoding=chardet_encoding)
 
-    df = df[(df['league'] == 'NHL')]
-    df = df[(df['prop'] == 'Hits')]
+    df = df[(df['league'] == 'NBA')]
+    df = df[(df['prop'] == 'Pts+Rebs')]
 
     unique_teams = df['team'].unique()
 
@@ -126,9 +111,7 @@ if __name__ == "__main__":
             if max_correlation:
                 team_correlations_list.append((team, max_correlation))
 
-    
-
-    print('team_correlations_list len',len(team_correlations_list))
+    print('team_correlations_list len', len(team_correlations_list))
     # Sort teams by their highest correlation values (highest to lowest)
     sorted_teams = sorted(team_correlations_list, key=lambda x: x[1], reverse=False)
 
@@ -147,18 +130,18 @@ if __name__ == "__main__":
     min_corrs = 7
     for corr in all_correlations:
         if len(corr[2]) >= min_corrs:
-            print("==========>")
+            print("==========>", corr[10])
             print("Corr Pair", corr[0], "Corr", round(corr[1], 2), "Events", len(corr[2]), "Up Events", len(corr[3]),
                   "Down Events", len(corr[4]))
             print("All Events", (corr[2]))
             print("Corr Up Events", (corr[3]))
             print("Corr Down Events", (corr[4]))
 
-    all_correlations.sort(key=lambda a: a[6],reverse=True)
+    all_correlations.sort(key=lambda a: a[6], reverse=True)
     min_corrs = 7
     for corr in all_correlations:
         if len(corr[7]) >= min_corrs:
-            print("==========>")
+            print("==========>", corr[10])
             print("Noncorr Pair", corr[5], "Corr", round(corr[6], 2), "Events", len(corr[7]), "Up Events", len(corr[8]),
                   "Down Events", len(corr[9]))
             print("All Events", (corr[7]))
