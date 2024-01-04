@@ -750,8 +750,8 @@ df.columns = [col.strip() for col in df.columns]  # Capitalize first letter and 
 df.to_csv(csv_file_path, index=False)
 
 print(f"Analysis results written to {csv_file_path}")
-# formatted_stamp = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
+formatted_stamp = datetime.datetime.now().strftime("%Y/%m/%d %H:%M")
 
 # Optionally, you can also write this filtered dataframe to a separate sheet in a Google Spreadsheet
-# sheets.write_to_spreadsheet(csv_file_path, "Prop Differencer", f'Difference Report', add_column_name="Updated",
-#                            add_column_data=formatted_stamp, index=0, overwrite=True, append=False)
+sheets.write_to_spreadsheet(csv_file_path, "Prop Differencer", f'Difference Report', add_column_name="Updated",
+                            add_column_data=formatted_stamp, index=0, overwrite=True, append=False)

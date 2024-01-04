@@ -4,29 +4,52 @@ import subprocess
 import datetime 
 
 def run_get_props_json():
+    current_time = datetime.datetime.now()
+    print(f"Running run_get_props_json at {current_time}")
     subprocess.run(["python", "pp_get_props_json.py"])
+    print(f"Completed run_get_props_json at {datetime.datetime.now()}")
 
 def run_pp_results_grabber_json():
+    current_time = datetime.datetime.now()
+    print(f"Running run_pp_results_grabber_json at {current_time}")
     subprocess.run(["python", "pp_results_report.py"])
-    
-def run_streak_driver():
-    subprocess.run(["python", "streak_driver.py"])    
+    print(f"Completed run_pp_results_grabber_json at {datetime.datetime.now()}")
 
-    
+def run_streak_driver():
+    current_time = datetime.datetime.now()
+    print(f"Running run_streak_driver at {current_time}")
+    subprocess.run(["python", "streak_driver.py"])
+    print(f"Completed run_streak_driver at {datetime.datetime.now()}")
+
 def run_ftn_scraper():
-    subprocess.run(["python", "ftn_scraper.py"])    
+    current_time = datetime.datetime.now()
+    print(f"Running run_ftn_scraper at {current_time}")
+    subprocess.run(["python", "ftn_scraper.py"])
+    print(f"Completed run_ftn_scraper at {datetime.datetime.now()}")
 
 def run_streak_resulter():
-    subprocess.run(["python", "streak_resulter.py"])    
+    current_time = datetime.datetime.now()
+    print(f"Running run_streak_resulter at {current_time}")
+    subprocess.run(["python", "streak_resulter.py"])
+    print(f"Completed run_streak_resulter at {datetime.datetime.now()}")
 
 def run_ftn_resulter_nfl():
-    subprocess.run(["python", "ftn_resulter.py","--league","NFL"])    
-    
+    current_time = datetime.datetime.now()
+    print(f"Running run_ftn_resulter_nfl at {current_time}")
+    subprocess.run(["python", "ftn_resulter.py", "--league", "NFL"])
+    print(f"Completed run_ftn_resulter_nfl at {datetime.datetime.now()}")
+
 def run_ftn_resulter_nba():
-    subprocess.run(["python", "ftn_resulter.py","--league","NBA"])    
-    
+    current_time = datetime.datetime.now()
+    print(f"Running run_ftn_resulter_nba at {current_time}")
+    subprocess.run(["python", "ftn_resulter.py", "--league", "NBA"])
+    print(f"Completed run_ftn_resulter_nba at {datetime.datetime.now()}")
+
 def prop_comp_driver():
-    subprocess.run(["python", "prop_comp_combined_driver.py"])     
+    current_time = datetime.datetime.now()
+    print(f"Running prop_comp_driver at {current_time}")
+    subprocess.run(["python", "prop_comp_combined_driver.py"])
+    print(f"Completed prop_comp_driver at {datetime.datetime.now()}")
 
 # Schedule the script to run at 7:00 am, 12:55 pm, and 11:00 pm
 #schedule.every().day.at("07:00").do(run_get_props_json)
