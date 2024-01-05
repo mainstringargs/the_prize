@@ -34,7 +34,7 @@ json_file_path = f'normalized_props/same_prop_correlation_scorecard_{today_date}
 if not os.path.exists(json_file_path):
     print(f"The file '{json_file_path}' does not exist.  Lets create it.", flush=True)
     # Call the function to generate the scorecard
-    subprocess.run(["python", "correlation_scorecard.py"])
+    subprocess.run(["python", "correlation_scorecard_same_prop.py"])
 else:
     print(f"The file '{json_file_path}' already exists. Skipping the function call.", flush=True)
 

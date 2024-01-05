@@ -7,7 +7,7 @@ import pandas as pd
 import sheets
 
 
-def calculate_correlation(team_df):
+def calculate_correlation(team_df, propA, propB):
     players = team_df['name'].unique()
     correlations = {}
 
@@ -16,8 +16,9 @@ def calculate_correlation(team_df):
             player1_name = players[i]
             player2_name = players[j]
 
-            common_events = set(team_df[team_df['name'] == player1_name]['Event Date']) & set(
-                team_df[team_df['name'] == player2_name]['Event Date'])
+            common_events = set(
+                team_df[(team_df['name'] == player1_name) & (team_df['prop'] == propA)]['Event Date']) & set(
+                team_df[(team_df['name'] == player2_name) & (team_df['prop'] == propB)]['Event Date'])
 
             common_events = sorted(common_events)
 
@@ -43,12 +44,12 @@ def calculate_correlation(team_df):
                         common_events.remove(ce)
 
                 if len(common_events) >= 2:  # Ensure there are at least two common events
-                    player1_data = \
-                        team_df[(team_df['name'] == player1_name) & team_df['Event Date'].isin(common_events)][
-                            'result'].map({'Over': 1, 'Under': -1, 'Push': 0})
-                    player2_data = \
-                        team_df[(team_df['name'] == player2_name) & team_df['Event Date'].isin(common_events)][
-                            'result'].map({'Over': 1, 'Under': -1, 'Push': 0})
+                    player1_data = team_df[
+                        (team_df['name'] == player1_name) & team_df['Event Date'].isin(common_events) & (
+                                    team_df['prop'] == propA)]['result'].map({'Over': 1, 'Under': -1, 'Push': 0})
+                    player2_data = team_df[
+                        (team_df['name'] == player2_name) & team_df['Event Date'].isin(common_events) & (
+                                    team_df['prop'] == propB)]['result'].map({'Over': 1, 'Under': -1, 'Push': 0})
 
                     if len(player1_data.unique()) > 1 and len(player2_data.unique()) > 1:  # Check for variability
                         correlation = np.corrcoef(player1_data, player2_data)[0, 1]
@@ -59,7 +60,7 @@ def calculate_correlation(team_df):
     return correlations
 
 
-def get_same_prop_correlations(team_name, correlations, team_df):
+def get_diff_prop_correlations(team_name, correlations, team_df):
     if not correlations:
         return None
 
@@ -130,7 +131,7 @@ def get_same_prop_correlations(team_name, correlations, team_df):
     return result_dict
 
 
-def get_same_prop_correlation_scorecard(min_corrs=6):
+def get_diff_prop_correlation_scorecard(min_corrs=6):
     # file_path = "pp_results.csv"  # Replace with the actual path to your CSV file
     #
     # with open(file_path, 'rb') as f:
@@ -152,103 +153,106 @@ def get_same_prop_correlation_scorecard(min_corrs=6):
 
     correlation_scorecard = {"positive": {}, "negative": {}}
 
-    for league, prop in league_prop_pairs:
-        df = sheets_df.copy()
-        df = df[(df['league'] == league)]
-        df = df[(df['prop'] == prop)]
-        # print(df)
+    for leagueA, propA in league_prop_pairs:
+        for leagueB, propB in league_prop_pairs:
+            if(propA == propB):
+                continue
 
-        if league not in correlation_scorecard["positive"]:
-            correlation_scorecard["positive"][league] = {}
-            correlation_scorecard["negative"][league] = {}
+            df = sheets_df.copy()
+            df = df[(df['league'] == leagueA)]
+            df = df[(df['prop'] == propA) | (df['prop'] == propB)]
+            # print(df)
 
-        if prop not in correlation_scorecard["positive"][league]:
-            correlation_scorecard["positive"][league][prop] = {}
-            correlation_scorecard["negative"][league][prop] = {}
+            if leagueA not in correlation_scorecard["positive"]:
+                correlation_scorecard["positive"][leagueA] = {}
+                correlation_scorecard["negative"][leagueA] = {}
 
-        unique_teams = df['team'].unique()
+            if leagueA not in correlation_scorecard["positive"][leagueA]:
+                correlation_scorecard["positive"][leagueA][propA] = {}
+                correlation_scorecard["negative"][leagueA][propA] = {}
 
-        team_correlations_list = []
+            unique_teams = df['team'].unique()
 
-        for team in unique_teams:
-            team_df = df[df['team'] == team]
+            team_correlations_list = []
 
-            # Check if there are enough players for correlation calculation
-            if len(team_df['name'].unique()) >= 2:
-                team_correlations = calculate_correlation(team_df)
-                max_correlation = max(team_correlations.values(), default=None)
-                if max_correlation:
-                    team_correlations_list.append((team, max_correlation))
+            for team in unique_teams:
+                team_df = df[df['team'] == team]
 
-        print('team_correlations_list len', len(team_correlations_list))
-        # Sort teams by their highest correlation values (highest to lowest)
-        sorted_teams = sorted(team_correlations_list, key=lambda x: x[1], reverse=False)
+                # Check if there are enough players for correlation calculation
+                if len(team_df['name'].unique()) >= 2:
+                    team_corrs = calculate_correlation(team_df, propA, propB)
+                    max_correlation = max(team_corrs.values(), default=None)
+                    if max_correlation:
+                        team_correlations_list.append((team, max_correlation, team_corrs))
 
-        all_correlations = []
-        team_correlations = {}
+            print('team_correlations_list len', len(team_correlations_list), leagueA, propA, propB)
+            # Sort teams by their highest correlation values (highest to lowest)
+            sorted_teams = sorted(team_correlations_list, key=lambda x: x[1], reverse=False)
 
-        for team, max_correlation in sorted_teams:
-            team_df = df[df['team'] == team]
-            calculated_correlations = calculate_correlation(team_df)
+            all_correlations = []
+            team_correlations = {}
 
-            correlations = get_same_prop_correlations(team, calculated_correlations, team_df)
-            all_correlations.append(correlations)
-            team_correlations[team] = correlations
+            for team, max_correlation, team_corrs in sorted_teams:
+                team_df = df[df['team'] == team]
 
-        all_correlations.sort(key=lambda a: a['max_correlation'])
+                correlations = get_diff_prop_correlations(team, team_corrs, team_df)
+                all_correlations.append(correlations)
+                team_correlations[team] = correlations
 
-        for corr in all_correlations:
-            if len(corr['max_events_together']) >= min_corrs:
+            all_correlations.sort(key=lambda a: a['max_correlation'])
 
-                player_pair = [part.strip() for part in corr['max_correlation_pair'].split('&')]
+            for corr in all_correlations:
+                if len(corr['max_events_together']) >= min_corrs:
 
-                if player_pair[0] not in correlation_scorecard["positive"][league][prop]:
-                    correlation_scorecard["positive"][league][prop][player_pair[0]] = {}
-                if player_pair[1] not in correlation_scorecard["positive"][league][prop]:
-                    correlation_scorecard["positive"][league][prop][player_pair[1]] = {}
+                    player_pair = [part.strip() for part in corr['max_correlation_pair'].split('&')]
 
-                correlation_scorecard["positive"][league][prop][player_pair[0]][player_pair[1]] = (corr)
-                correlation_scorecard["positive"][league][prop][player_pair[1]][player_pair[0]] = (corr)
+                    if player_pair[0] not in correlation_scorecard["positive"][leagueA][propA]:
+                        correlation_scorecard["positive"][leagueA][propA][player_pair[0]] = {}
+                    if player_pair[1] not in correlation_scorecard["positive"][leagueA][propA]:
+                        correlation_scorecard["positive"][leagueA][propA][player_pair[1]] = {}
 
-                print("==========>", corr['team_name'], league, prop)
-                print("Corr Pair", corr['max_correlation_pair'], "Corr", round(corr['max_correlation'], 2), "Events",
-                      len(corr['max_events_together']), "Up Events",
-                      len(corr['max_events_together_overs']),
-                      "Down Events", len(corr['max_events_together_unders']))
-                print("All Events", (corr['max_events_together']))
-                print("Corr Up Events", (corr['max_events_together_overs']))
-                print("Corr Down Events", (corr['max_events_together_unders']))
+                    correlation_scorecard["positive"][leagueA][propA][player_pair[0]][player_pair[1]] = (corr)
+                    correlation_scorecard["positive"][leagueA][propA][player_pair[1]][player_pair[0]] = (corr)
 
-        all_correlations.sort(key=lambda a: a['min_correlation'], reverse=True)
-        for corr in all_correlations:
-            if len(corr['min_events_together']) >= min_corrs:
-                player_pair = [part.strip() for part in corr['min_correlation_pair'].split('&')]
-                if player_pair[0] not in correlation_scorecard["negative"][league][prop]:
-                    correlation_scorecard["negative"][league][prop][player_pair[0]] = {}
-                if player_pair[1] not in correlation_scorecard["negative"][league][prop]:
-                    correlation_scorecard["negative"][league][prop][player_pair[1]] = {}
+                    print("==========>", corr['team_name'], leagueA, propA, propB)
+                    print("Corr Pair", corr['max_correlation_pair'], "Corr", round(corr['max_correlation'], 2), "Events",
+                          len(corr['max_events_together']), "Up Events",
+                          len(corr['max_events_together_overs']),
+                          "Down Events", len(corr['max_events_together_unders']))
+                    print("All Events", (corr['max_events_together']))
+                    print("Corr Up Events", (corr['max_events_together_overs']))
+                    print("Corr Down Events", (corr['max_events_together_unders']))
 
-                correlation_scorecard["negative"][league][prop][player_pair[0]][player_pair[1]] = (corr)
-                correlation_scorecard["negative"][league][prop][player_pair[1]][player_pair[0]] = (corr)
+            all_correlations.sort(key=lambda a: a['min_correlation'], reverse=True)
+            for corr in all_correlations:
+                if len(corr['min_events_together']) >= min_corrs:
+                    player_pair = [part.strip() for part in corr['min_correlation_pair'].split('&')]
+                    if player_pair[0] not in correlation_scorecard["negative"][leagueA][propA]:
+                        correlation_scorecard["negative"][leagueA][propA][player_pair[0]] = {}
+                    if player_pair[1] not in correlation_scorecard["negative"][leagueA][propA]:
+                        correlation_scorecard["negative"][leagueA][propA][player_pair[1]] = {}
 
-                print("==========>", corr['team_name'], league, prop)
-                print("Noncorr Pair", corr['min_correlation_pair'], "Corr", round(corr['min_correlation'], 2), "Events",
-                      len(corr['min_events_together']), "Up Events",
-                      len(corr['min_events_together_overs']),
-                      "Down Events", len(corr['min_events_together_unders']))
-                print("All Events", (corr['min_events_together']))
-                print("Corr Up Events", (corr['min_events_together_overs']))
-                print("Corr Down Events", (corr['min_events_together_unders']))
+                    correlation_scorecard["negative"][leagueA][propA][player_pair[0]][player_pair[1]] = (corr)
+                    correlation_scorecard["negative"][leagueA][propA][player_pair[1]][player_pair[0]] = (corr)
+
+                    print("==========>", corr['team_name'], leagueA, propA, propB)
+                    print("Noncorr Pair", corr['min_correlation_pair'], "Corr", round(corr['min_correlation'], 2), "Events",
+                          len(corr['min_events_together']), "Up Events",
+                          len(corr['min_events_together_overs']),
+                          "Down Events", len(corr['min_events_together_unders']))
+                    print("All Events", (corr['min_events_together']))
+                    print("Corr Up Events", (corr['min_events_together_overs']))
+                    print("Corr Down Events", (corr['min_events_together_unders']))
 
     return correlation_scorecard;
 
 
 if __name__ == "__main__":
-    scorecord = get_same_prop_correlation_scorecard()
+    scorecord = get_diff_prop_correlation_scorecard()
 
     # Generate the file name with today's date
     today_date = datetime.now().strftime('%Y%m%d')
-    json_file_path = f'normalized_props/same_prop_correlation_scorecard_{today_date}.json'
+    json_file_path = f'normalized_props/diff_prop_correlation_scorecard_{today_date}.json'
 
     # Write the dictionary to the JSON file
     with open(json_file_path, 'w') as jsonfile:

@@ -502,6 +502,12 @@ def get_start_time(prop_data):
     return None;
 
 
+def is_name_present(player_name):
+    if player_name in pp_properties_dict or player_name in sleeper_properties_dict or player_name in ud_properties_dict or player_name in dkp6_properties_dict:
+        return True;
+    return False;
+
+
 # Accumulate data in a list
 analysis_results = []
 
@@ -631,13 +637,13 @@ for name in pp_properties_dict:
                 high_low_line_diff = None;
                 if low_line_source and high_line_source:
                     high_low_line_diff = round(get_high_low_line_diff(prop_data, low_line_source, high_line_source), 3)
-                    print("high_low_line_diff", high_low_line_diff)
+                # print("high_low_line_diff", high_low_line_diff)
 
-                print("sport", sport, "team", team, "name", name, "position", position, "prop", prop, "pp_line",
-                      pp_line, "ud_line", ud_line, "dkp6_line", dkp6_line, "sleeper_line", sleeper_line,
-                      "sleeper_over_odds", sleeper_over_odds, "sleeper_under_odds", sleeper_under_odds,
-                      "sleeper_popularity", sleeper_popularity, "low_line_source", low_line_source, "high_line_source",
-                      high_line_source, "high_low_line_diff", high_low_line_diff, "start_time", start_time)
+                # print("sport", sport, "team", team, "name", name, "position", position, "prop", prop, "pp_line",
+                #    pp_line, "ud_line", ud_line, "dkp6_line", dkp6_line, "sleeper_line", sleeper_line,
+                #      "sleeper_over_odds", sleeper_over_odds, "sleeper_under_odds", sleeper_under_odds,
+                #     "sleeper_popularity", sleeper_popularity, "low_line_source", low_line_source, "high_line_source",
+                #      high_line_source, "high_low_line_diff", high_low_line_diff, "start_time", start_time)
 
                 max_correlated_player = ""
                 max_correlation = ""
@@ -660,7 +666,8 @@ for name in pp_properties_dict:
                             corr_props = same_prop_correlation_scorecard['positive'][sport][prop][name]
                             for key, value in corr_props.items():
                                 max_correlation_pair = value['max_correlation_pair']
-                                if name in max_correlation_pair and key in max_correlation_pair:
+                                is_present = is_name_present(key)
+                                if is_present and name in max_correlation_pair and key in max_correlation_pair:
                                     max_correlated_player = key
                                     max_correlation = round(float(value['max_correlation']), 2)
                                     max_total_events_together = len(value['max_events_together'])
@@ -682,7 +689,8 @@ for name in pp_properties_dict:
                             corr_props = same_prop_correlation_scorecard['negative'][sport][prop][name]
                             for key, value in corr_props.items():
                                 min_correlation_pair = value['min_correlation_pair']
-                                if name in min_correlation_pair and key in min_correlation_pair:
+                                is_present = is_name_present(key)
+                                if is_present and name in min_correlation_pair and key in min_correlation_pair:
                                     min_correlated_player = key
                                     min_correlation = round(float(value['min_correlation']), 2)
                                     min_total_events_together = len(value['min_events_together'])
